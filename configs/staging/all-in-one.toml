@@ -1,0 +1,13 @@
+listen = "0.0.0.0:9443"
+state_dir = "./state/staging"
+
+[schema]
+schema_version = 1
+mode = "single_node"
+node_name = "staging-node-1"
+
+[secrets]
+master_key = "c3RhZ2luZy1tYXN0ZXIta2V5LW1hdGVyaWFsLTMyISE"
+
+[security]
+bootstrap_admin_token = "staging-bootstrap-admin-token-change-me"

@@ -1,0 +1,8 @@
+name = "lifecycle_extension_registry"
+scope = "schema"
+from_version = 1
+to_version = 2
+checksum = "eae471336f91281a3587df5311b9ccd1ac523849fd89fb20053d3d2a444450f5"
+
+[compatibility]
+window_days = 30

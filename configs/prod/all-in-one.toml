@@ -1,0 +1,15 @@
+listen = "0.0.0.0:9443"
+state_dir = "./state/prod"
+
+[schema]
+schema_version = 1
+mode = "all_in_one"
+node_name = "prod-bootstrap-node-1"
+
+# Inject deployment-specific secrets at runtime instead of committing them.
+# Example environment overlays:
+#   UHOST_SECRETS__MASTER_KEY="$(openssl rand -base64 32 | tr '+/' '-_' | tr -d '=')"
+#   UHOST_SECURITY__BOOTSTRAP_ADMIN_TOKEN="$(openssl rand -hex 32)"
+[secrets]
+
+[security]

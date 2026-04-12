@@ -1,0 +1,15 @@
+[Unit]
+Description=Project UHost all-in-one control plane
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/project-uhost
+ExecStart=/opt/project-uhost/bin/uhostd --config /etc/project-uhost/all-in-one.toml
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

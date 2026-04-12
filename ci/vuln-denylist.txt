@@ -1,0 +1,6 @@
+# Format:
+# crate_name version reason
+#
+# Add known-vulnerable crate releases that must fail CI if present.
+# This file is intentionally committed so gates remain deterministic even when
+# online advisory services are unavailable.

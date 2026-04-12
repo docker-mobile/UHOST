@@ -1,0 +1,25 @@
+[package]
+name = "uhost-svc-storage"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+bytes.workspace = true
+http.workspace = true
+http-body-util.workspace = true
+hyper.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+time.workspace = true
+tokio.workspace = true
+uhost-api = { path = "../../crates/uhost-api" }
+uhost-core = { path = "../../crates/uhost-core" }
+uhost-runtime = { path = "../../crates/uhost-runtime" }
+uhost-store = { path = "../../crates/uhost-store" }
+uhost-types = { path = "../../crates/uhost-types" }
+
+[dev-dependencies]
+tempfile.workspace = true

@@ -1,0 +1,155 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  config-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Config safety gate
+        run: bash ci/config-safety-gate.sh
+
+  vuln-check:
+    needs: config-safety
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned Rust toolchain
+        id: rust-toolchain
+        shell: bash
+        run: |
+          channel="$(grep -E '^[[:space:]]*channel[[:space:]]*=' rust-toolchain.toml | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [[ -z "${channel}" ]]; then
+            echo "failed to resolve the pinned Rust toolchain from rust-toolchain.toml" >&2
+            exit 1
+          fi
+          echo "channel=${channel}" >> "${GITHUB_OUTPUT}"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.channel }}
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Vulnerability gate
+        run: bash ci/vuln-check.sh
+
+  build-and-test:
+    needs: [config-safety, vuln-check]
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned Rust toolchain
+        id: rust-toolchain
+        shell: bash
+        run: |
+          channel="$(grep -E '^[[:space:]]*channel[[:space:]]*=' rust-toolchain.toml | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [[ -z "${channel}" ]]; then
+            echo "failed to resolve the pinned Rust toolchain from rust-toolchain.toml" >&2
+            exit 1
+          fi
+          echo "channel=${channel}" >> "${GITHUB_OUTPUT}"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.channel }}
+          components: rustfmt, clippy
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Format
+        run: cargo fmt --all -- --check
+      - name: Lint
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      - name: Test
+        run: cargo test --workspace
+
+  wave1-evidence:
+    needs: [config-safety, vuln-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned Rust toolchain
+        id: rust-toolchain
+        shell: bash
+        run: |
+          channel="$(grep -E '^[[:space:]]*channel[[:space:]]*=' rust-toolchain.toml | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [[ -z "${channel}" ]]; then
+            echo "failed to resolve the pinned Rust toolchain from rust-toolchain.toml" >&2
+            exit 1
+          fi
+          echo "channel=${channel}" >> "${GITHUB_OUTPUT}"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.channel }}
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Wave 1 evidence gate
+        run: bash ci/wave1-evidence-gate.sh
+
+  wave3-evidence:
+    needs: [config-safety, vuln-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned Rust toolchain
+        id: rust-toolchain
+        shell: bash
+        run: |
+          channel="$(grep -E '^[[:space:]]*channel[[:space:]]*=' rust-toolchain.toml | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [[ -z "${channel}" ]]; then
+            echo "failed to resolve the pinned Rust toolchain from rust-toolchain.toml" >&2
+            exit 1
+          fi
+          echo "channel=${channel}" >> "${GITHUB_OUTPUT}"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.channel }}
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Wave 3 evidence gate
+        run: bash ci/wave3-evidence-gate.sh
+
+  supply-chain:
+    needs: [config-safety, vuln-check]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Resolve pinned Rust toolchain
+        id: rust-toolchain
+        shell: bash
+        run: |
+          channel="$(grep -E '^[[:space:]]*channel[[:space:]]*=' rust-toolchain.toml | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')"
+          if [[ -z "${channel}" ]]; then
+            echo "failed to resolve the pinned Rust toolchain from rust-toolchain.toml" >&2
+            exit 1
+          fi
+          echo "channel=${channel}" >> "${GITHUB_OUTPUT}"
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.channel }}
+          components: rustfmt, clippy
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked
+      - name: Config safety gate
+        run: bash ci/config-safety-gate.sh
+      - name: Supply-chain gate
+        run: bash ci/supply-chain-gate.sh
+      - name: Upload supply-chain artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: supply-chain-artifacts
+          path: |
+            target/sbom
+            target/provenance
+            target/signatures

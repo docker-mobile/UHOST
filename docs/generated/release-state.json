@@ -1,0 +1,144 @@
+{
+  "schema_version": 1,
+  "bundle": "release-state",
+  "generated_at": "2026-04-10T10:27:16Z",
+  "generator": {
+    "script": "scripts/generate-release-state.sh",
+    "script_sha256": "504e4e24f26217f5f7fa98074e206c2796dbe1e56eb6d52614847e32db4fa20c",
+    "command": "bash scripts/generate-release-state.sh"
+  },
+  "git": {
+    "revision": "164892cb063248fcdb3aa8049a60acf98e6b5793",
+    "dirty": true
+  },
+  "contracts": {
+    "openapi": {
+      "path": "openapi/control-plane-v1.yaml",
+      "sha256": "7eb472dd7e1c518ab8ca68451a46965c0ac6c56ebd38734f44f8d28d49967462",
+      "line_count": 9554
+    },
+    "proto": {
+      "path": "proto/control-plane-v1.proto",
+      "sha256": "cb1653d3daf1f49e58661241dd98c4ec95ce6fefa4f1a4144dff6a6c77923d37",
+      "line_count": 4394
+    }
+  },
+  "evidence": {
+    "uvm_stack_manifest": {
+      "path": "docs/benchmarks/generated/uvm-stack-validation-manifest.json",
+      "bundle": "wave3-core-generated-benchmark-evidence",
+      "generated_at": "2026-04-09 16:07:10 +00:00:00",
+      "sha256": "7c539877c6861f3b99a95372074d49741dfd6ff26a6dc68dddcd343de44e8511"
+    },
+    "host_validation": {
+      "path": "docs/benchmarks/generated/host-validation.md",
+      "generated_at": "2026-04-09 16:05:49.447659995 +00:00:00",
+      "measurement_mode": "hybrid",
+      "execution_environment": "container_restricted",
+      "uvm_claim_tier": "research_only",
+      "qemu_claim_tier": "compatible",
+      "sha256": "1d5710800baa10f7078f716b88156e1af037d60a14d3176ca68bb374f24582de"
+    }
+  },
+  "operator_surfaces": [
+    {
+      "name": "UVM observe summary",
+      "path": "services/uhost-svc-uvm-observe/src/lib.rs",
+      "endpoint": "/uvm/observe/summary",
+      "notes": "Claim/evidence summary upheld in UVM observe stores",
+      "available": true
+    }
+,
+    {
+      "name": "Secrets summary",
+      "path": "services/uhost-svc-secrets/src/lib.rs",
+      "endpoint": "/secrets/summary",
+      "notes": "Secret/version/ownership totals from encrypted secret records",
+      "available": true
+    }
+,
+    {
+      "name": "Stream summary",
+      "path": "services/uhost-svc-stream/src/lib.rs",
+      "endpoint": "/stream/summary",
+      "notes": "Managed stream, replay-log, and subscriber-lag summary from stream records",
+      "available": true
+    }
+,
+    {
+      "name": "Scheduler summary",
+      "path": "services/uhost-svc-scheduler/src/lib.rs",
+      "endpoint": "/scheduler/summary",
+      "notes": "Inventory and placement totals from scheduler state documents",
+      "available": true
+    }
+,
+    {
+      "name": "UVM control summary",
+      "path": "services/uhost-svc-uvm-control/src/lib.rs",
+      "endpoint": "/uvm/control/summary",
+      "notes": "Template/instance state and claim/backend summary from control-plane records",
+      "available": true
+    }
+,
+    {
+      "name": "Billing owner summaries",
+      "path": "services/uhost-svc-billing/src/lib.rs",
+      "endpoint": "/billing/owner-summaries",
+      "notes": "Tenant-to-account linkage summary from billing records",
+      "available": true
+    }
+,
+    {
+      "name": "Control summary",
+      "path": "services/uhost-svc-control/src/lib.rs",
+      "endpoint": "/control/summary",
+      "notes": "Workload placement overview from control service records",
+      "available": true
+    }
+,
+    {
+      "name": "Observe node-health",
+      "path": "services/uhost-svc-observe/src/lib.rs",
+      "endpoint": "/observe/node-health",
+      "notes": "Node heartbeat + process-report summary from node stores",
+      "available": true
+    }
+,
+    {
+      "name": "Billing summary",
+      "path": "services/uhost-svc-billing/src/lib.rs",
+      "endpoint": "/billing/summary",
+      "notes": "Account/subscription/invoice/provider-sync totals from billing records",
+      "available": true
+    }
+,
+    {
+      "name": "Identity summary",
+      "path": "services/uhost-svc-identity/src/lib.rs",
+      "endpoint": "/identity/summary",
+      "notes": "Principal/session overview from identity stores",
+      "available": true
+    }
+,
+    {
+      "name": "Console status",
+      "path": "services/uhost-svc-console/src/lib.rs",
+      "endpoint": "/console/status",
+      "notes": "Console dashboard snapshot derived from state-root counts",
+      "available": true
+    }
+,
+    {
+      "name": "HA readiness",
+      "path": "services/uhost-svc-ha/src/lib.rs",
+      "endpoint": "/ha/readiness-summary",
+      "notes": "Role/replication/failover assessment recorded in HA stores",
+      "available": true
+    }
+  ],
+  "notes": [
+    "This artifact is generated. Regenerate after contract or benchmark evidence updates.",
+    "Human-facing status docs should link to docs/generated/release-state.md instead of restating mutable verification batches."
+  ]
+}

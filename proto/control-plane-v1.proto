@@ -1,0 +1,4999 @@
+syntax = "proto3";
+
+package projectuhost.controlplane.v1;
+
+message HealthRequest {}
+
+message HealthReply {
+  string status = 1;
+}
+
+message ResourceMetadata {
+  string created_at = 1;
+  string updated_at = 2;
+  string lifecycle = 3;
+  string ownership_scope = 4;
+  optional string owner_id = 5;
+  map<string, string> labels = 6;
+  map<string, string> annotations = 7;
+  optional string deleted_at = 8;
+  string etag = 9;
+}
+
+// Phase-1 runtime kernel vocabulary for explicit route admission classification.
+enum RouteSurface {
+  ROUTE_SURFACE_UNSPECIFIED = 0;
+  ROUTE_SURFACE_PUBLIC = 1;
+  ROUTE_SURFACE_TENANT = 2;
+  ROUTE_SURFACE_OPERATOR = 3;
+  ROUTE_SURFACE_INTERNAL = 4;
+}
+
+enum RouteMethodMatch {
+  ROUTE_METHOD_MATCH_UNSPECIFIED = 0;
+  ROUTE_METHOD_MATCH_ANY = 1;
+  ROUTE_METHOD_MATCH_SAFE = 2;
+  ROUTE_METHOD_MATCH_UNSAFE = 3;
+}
+
+enum RouteRequestClass {
+  ROUTE_REQUEST_CLASS_UNSPECIFIED = 0;
+  ROUTE_REQUEST_CLASS_READ = 1;
+  ROUTE_REQUEST_CLASS_CONTROL_READ = 2;
+  ROUTE_REQUEST_CLASS_MUTATE = 3;
+  ROUTE_REQUEST_CLASS_ASYNC_MUTATE = 4;
+  ROUTE_REQUEST_CLASS_OPERATOR_READ = 5;
+  ROUTE_REQUEST_CLASS_OPERATOR_MUTATE = 6;
+  ROUTE_REQUEST_CLASS_OPERATOR_DESTRUCTIVE = 7;
+}
+
+message RouteSurfaceBinding {
+  string owner = 1;
+  string claim = 2;
+  string match_kind = 3;
+  RouteSurface surface = 4;
+  RouteMethodMatch method_match = 5;
+  RouteRequestClass request_class = 6;
+}
+
+message RuntimeRouteSurfaceManifest {
+  repeated RouteSurfaceBinding bindings = 1;
+}
+
+enum RuntimeProcessRole {
+  RUNTIME_PROCESS_ROLE_UNSPECIFIED = 0;
+  RUNTIME_PROCESS_ROLE_ALL_IN_ONE = 1;
+  RUNTIME_PROCESS_ROLE_EDGE = 2;
+  RUNTIME_PROCESS_ROLE_CONTROLLER = 3;
+  RUNTIME_PROCESS_ROLE_WORKER = 4;
+  RUNTIME_PROCESS_ROLE_NODE_ADJACENT = 5;
+}
+
+enum RuntimeLogicalServiceGroup {
+  RUNTIME_LOGICAL_SERVICE_GROUP_UNSPECIFIED = 0;
+  RUNTIME_LOGICAL_SERVICE_GROUP_EDGE = 1;
+  RUNTIME_LOGICAL_SERVICE_GROUP_IDENTITY_AND_POLICY = 2;
+  RUNTIME_LOGICAL_SERVICE_GROUP_CONTROL = 3;
+  RUNTIME_LOGICAL_SERVICE_GROUP_DATA_AND_MESSAGING = 4;
+  RUNTIME_LOGICAL_SERVICE_GROUP_GOVERNANCE_AND_OPERATIONS = 5;
+  RUNTIME_LOGICAL_SERVICE_GROUP_UVM = 6;
+}
+
+enum RuntimeReadiness {
+  RUNTIME_READINESS_UNSPECIFIED = 0;
+  RUNTIME_READINESS_STARTING = 1;
+  RUNTIME_READINESS_READY = 2;
+}
+
+enum RuntimeDrainIntent {
+  RUNTIME_DRAIN_INTENT_UNSPECIFIED = 0;
+  RUNTIME_DRAIN_INTENT_SERVING = 1;
+  RUNTIME_DRAIN_INTENT_DRAINING = 2;
+}
+
+enum RuntimeLeaseFreshness {
+  RUNTIME_LEASE_FRESHNESS_UNSPECIFIED = 0;
+  RUNTIME_LEASE_FRESHNESS_FRESH = 1;
+  RUNTIME_LEASE_FRESHNESS_STALE = 2;
+  RUNTIME_LEASE_FRESHNESS_EXPIRED = 3;
+}
+
+enum RuntimeParticipantLeaseSource {
+  RUNTIME_PARTICIPANT_LEASE_SOURCE_UNSPECIFIED = 0;
+  RUNTIME_PARTICIPANT_LEASE_SOURCE_LINKED_REGISTRATION = 1;
+  RUNTIME_PARTICIPANT_LEASE_SOURCE_PUBLISHED_STATE_FALLBACK = 2;
+}
+
+enum RuntimeParticipantDegradedReason {
+  RUNTIME_PARTICIPANT_DEGRADED_REASON_UNSPECIFIED = 0;
+  RUNTIME_PARTICIPANT_DEGRADED_REASON_LEASE_STALE = 1;
+  RUNTIME_PARTICIPANT_DEGRADED_REASON_LEASE_EXPIRED = 2;
+}
+
+message RuntimeServiceGroupOwnership {
+  RuntimeLogicalServiceGroup group = 1;
+  RuntimeProcessRole owner_role = 2;
+  repeated string services = 3;
+}
+
+message RuntimeLeaseState {
+  string renewed_at = 1;
+  string expires_at = 2;
+  uint32 duration_seconds = 3;
+  RuntimeLeaseFreshness freshness = 4;
+}
+
+message RuntimeProcessState {
+  string registration_id = 1;
+  RuntimeReadiness readiness = 2;
+  RuntimeDrainIntent drain_intent = 3;
+  string registered_at = 4;
+  RuntimeLeaseState lease = 5;
+}
+
+message RuntimeParticipantState {
+  RuntimeReadiness readiness = 1;
+  RuntimeDrainIntent drain_intent = 2;
+  RuntimeLeaseState lease = 3;
+  RuntimeDrainIntent published_drain_intent = 4;
+  RuntimeParticipantLeaseSource lease_source = 5;
+  RuntimeParticipantDegradedReason degraded_reason = 6;
+  RuntimeParticipantDrainPhase drain_phase = 7;
+  string takeover_registration_id = 8;
+  string takeover_acknowledged_at = 9;
+}
+
+enum RuntimeParticipantDrainPhase {
+  RUNTIME_PARTICIPANT_DRAIN_PHASE_UNSPECIFIED = 0;
+  RUNTIME_PARTICIPANT_DRAIN_PHASE_SERVING = 1;
+  RUNTIME_PARTICIPANT_DRAIN_PHASE_TAKEOVER_PENDING = 2;
+  RUNTIME_PARTICIPANT_DRAIN_PHASE_TAKEOVER_ACKNOWLEDGED = 3;
+}
+
+enum RuntimeParticipantCleanupStage {
+  RUNTIME_PARTICIPANT_CLEANUP_STAGE_UNSPECIFIED = 0;
+  RUNTIME_PARTICIPANT_CLEANUP_STAGE_PENDING_REVIEW = 1;
+  RUNTIME_PARTICIPANT_CLEANUP_STAGE_PREFLIGHT_CONFIRMED = 2;
+  RUNTIME_PARTICIPANT_CLEANUP_STAGE_TOMBSTONE_ELIGIBLE = 3;
+}
+
+message RuntimeEvacuationRouteWithdrawalArtifact {
+  string artifact_id = 1;
+  string source_participant_registration_id = 2;
+  repeated string service_groups = 3;
+  string prepared_at = 4;
+}
+
+message RuntimeEvacuationTargetReadinessArtifact {
+  string artifact_id = 1;
+  string source_participant_registration_id = 2;
+  string target_participant_registration_id = 3;
+  repeated string service_groups = 4;
+  string prepared_at = 5;
+}
+
+message RuntimeEvacuationRollbackArtifact {
+  string artifact_id = 1;
+  string source_participant_registration_id = 2;
+  string target_participant_registration_id = 3;
+  repeated string service_groups = 4;
+  string prepared_at = 5;
+}
+
+message RuntimeParticipantCleanupWorkflow {
+  string id = 1;
+  string workflow_kind = 2;
+  string phase = 3;
+  RuntimeParticipantCleanupStage stage = 4;
+  uint32 review_observations = 5;
+  string last_observed_stale_at = 6;
+  string preflight_confirmed_at = 7;
+  string tombstone_eligible_at = 8;
+  string created_at = 9;
+  string updated_at = 10;
+  RuntimeEvacuationRouteWithdrawalArtifact route_withdrawal = 11;
+  RuntimeEvacuationTargetReadinessArtifact target_readiness = 12;
+  RuntimeEvacuationRollbackArtifact rollback = 13;
+}
+
+message RuntimeParticipantReconciliation {
+  string last_reconciled_at = 1;
+  string stale_since = 2;
+  RuntimeParticipantCleanupWorkflow cleanup_workflow = 3;
+}
+
+enum RuntimeServiceGroupConflictState {
+  RUNTIME_SERVICE_GROUP_CONFLICT_STATE_UNSPECIFIED = 0;
+  RUNTIME_SERVICE_GROUP_CONFLICT_STATE_NO_CONFLICT = 1;
+  RUNTIME_SERVICE_GROUP_CONFLICT_STATE_MULTIPLE_HEALTHY_REGISTRATIONS = 2;
+}
+
+message RuntimeServiceGroupRegistrationResolution {
+  string registration_id = 1;
+  string participant_kind = 2;
+  string subject_id = 3;
+  string role = 4;
+  string node_name = 5;
+  string lease_registration_id = 6;
+  string registered_at = 7;
+  RuntimeReadinessState readiness = 8;
+  RuntimeDrainIntent drain_intent = 9;
+  RuntimeLeaseFreshness lease_freshness = 10;
+  bool healthy = 11;
+  RuntimeParticipantDrainPhase drain_phase = 12;
+  string takeover_registration_id = 13;
+  string takeover_acknowledged_at = 14;
+}
+
+message RuntimeServiceGroupDirectoryEntry {
+  RuntimeLogicalServiceGroup group = 1;
+  repeated string resolved_registration_ids = 2;
+  RuntimeServiceGroupConflictState conflict_state = 3;
+  repeated RuntimeServiceGroupRegistrationResolution registrations = 4;
+}
+
+message RuntimeRegionMembership {
+  string region_id = 1;
+  string region_name = 2;
+}
+
+message RuntimeCellMembership {
+  string cell_id = 1;
+  string cell_name = 2;
+}
+
+message RuntimeParticipantRegistration {
+  string registration_id = 1;
+  string participant_kind = 2;
+  string subject_id = 3;
+  string role = 4;
+  string node_name = 5;
+  repeated string service_groups = 6;
+  string registered_at = 7;
+  string lease_registration_id = 8;
+  RuntimeParticipantState state = 9;
+  RuntimeParticipantReconciliation reconciliation = 10;
+}
+
+message RuntimeParticipantTombstoneHistoryEntry {
+  string event_id = 1;
+  string cell_id = 2;
+  string cell_name = 3;
+  string region_id = 4;
+  string region_name = 5;
+  string participant_registration_id = 6;
+  string participant_kind = 7;
+  string participant_subject_id = 8;
+  string participant_role = 9;
+  string node_name = 10;
+  repeated string service_groups = 11;
+  string cleanup_workflow_id = 12;
+  uint32 review_observations = 13;
+  string stale_since = 14;
+  string preflight_confirmed_at = 15;
+  string tombstone_eligible_at = 16;
+  string tombstoned_at = 17;
+  string actor_subject = 18;
+  string actor_type = 19;
+  string correlation_id = 20;
+  string lease_registration_id = 21;
+  bool removed_from_cell_directory = 22;
+  bool lease_registration_soft_deleted = 23;
+  bool cleanup_workflow_soft_deleted = 24;
+  RuntimeDrainIntent published_drain_intent = 25;
+  RuntimeParticipantDegradedReason degraded_reason = 26;
+  RuntimeParticipantLeaseSource lease_source = 27;
+}
+
+message RuntimeTopologyReply {
+  RuntimeProcessRole process_role = 1;
+  string deployment_mode = 2;
+  string node_name = 3;
+  repeated RuntimeServiceGroupOwnership service_groups = 4;
+  RuntimeProcessState process_state = 5;
+  RuntimeRegionMembership region = 6;
+  RuntimeCellMembership cell = 7;
+  repeated RuntimeParticipantRegistration participants = 8;
+  repeated RuntimeParticipantTombstoneHistoryEntry tombstone_history = 9;
+  repeated RuntimeServiceGroupDirectoryEntry service_group_directory = 10;
+}
+
+message ListRuntimeParticipantTombstoneHistoryRequest {
+  uint32 limit = 1;
+  string cursor = 2;
+}
+
+message RuntimeParticipantTombstoneHistoryRetention {
+  uint32 max_entries = 1;
+  uint32 retained_entries = 2;
+  uint32 pruned_entries = 3;
+  string oldest_retained_tombstoned_at = 4;
+  string oldest_retained_event_id = 5;
+}
+
+message ListRuntimeParticipantTombstoneHistoryReply {
+  repeated RuntimeParticipantTombstoneHistoryEntry items = 1;
+  string next_cursor = 2;
+  RuntimeParticipantTombstoneHistoryRetention retention = 3;
+}
+
+message RuntimeParticipantTombstoneRelayEvidence {
+  string message_id = 1;
+  string topic = 2;
+  string idempotency_key = 3;
+  string source_service = 4;
+  string event_type = 5;
+  string delivery_state = 6;
+  string backend = 7;
+  uint32 attempts = 8;
+  string last_attempt_at = 9;
+  string delivered_at = 10;
+  string last_error = 11;
+  string next_retry_at = 12;
+  uint32 replay_count = 13;
+  string last_replayed_at = 14;
+  string last_replay_reason = 15;
+}
+
+message RuntimeParticipantTombstoneAggregateEntry {
+  RuntimeParticipantTombstoneHistoryEntry history = 1;
+  RuntimeParticipantTombstoneRelayEvidence relay_evidence = 2;
+}
+
+message ListRuntimeParticipantTombstoneAggregateHistoryRequest {
+  uint32 limit = 1;
+  string cursor = 2;
+  string event_id = 3;
+  string cell_id = 4;
+  string region_id = 5;
+  string participant_registration_id = 6;
+  string cleanup_workflow_id = 7;
+}
+
+message ListRuntimeParticipantTombstoneAggregateHistoryReply {
+  repeated RuntimeParticipantTombstoneAggregateEntry items = 1;
+  string next_cursor = 2;
+  RuntimeParticipantTombstoneHistoryRetention retention = 3;
+}
+
+message TombstoneRuntimeParticipantRequest {
+  string registration_id = 1;
+}
+
+message TombstoneRuntimeParticipantReply {
+  string cell_id = 1;
+  string participant_registration_id = 2;
+  string cleanup_workflow_id = 3;
+  string tombstoned_at = 4;
+  string lease_registration_id = 5;
+  bool removed_from_cell_directory = 6;
+  bool lease_registration_soft_deleted = 7;
+  bool cleanup_workflow_soft_deleted = 8;
+}
+
+service RuntimeService {
+  rpc GetTopology(HealthRequest) returns (RuntimeTopologyReply);
+  rpc ListParticipantTombstoneHistory(ListRuntimeParticipantTombstoneHistoryRequest) returns (ListRuntimeParticipantTombstoneHistoryReply);
+  rpc ListParticipantTombstoneAggregateHistory(ListRuntimeParticipantTombstoneAggregateHistoryRequest) returns (ListRuntimeParticipantTombstoneAggregateHistoryReply);
+  rpc TombstoneParticipant(TombstoneRuntimeParticipantRequest) returns (TombstoneRuntimeParticipantReply);
+}
+
+enum PrincipalKind {
+  PRINCIPAL_KIND_UNSPECIFIED = 0;
+  PRINCIPAL_KIND_SYSTEM = 1;
+  PRINCIPAL_KIND_OPERATOR = 2;
+  PRINCIPAL_KIND_USER = 3;
+  PRINCIPAL_KIND_WORKLOAD = 4;
+}
+
+message PrincipalIdentity {
+  PrincipalKind kind = 1;
+  string subject = 2;
+  string credential_id = 3;
+}
+
+message CreateUserRequest {
+  string email = 1;
+  string display_name = 2;
+  string password = 3;
+}
+
+message CreateUserReply {
+  string id = 1;
+  string email = 2;
+  string display_name = 3;
+  bool mfa_enabled = 4;
+  bool suspended = 5;
+  ResourceMetadata metadata = 6;
+}
+
+message ListIdentityUsersRequest {}
+
+message ListIdentityUsersReply {
+  repeated CreateUserReply users = 1;
+}
+
+message GetIdentityUserRequest {
+  string user_id = 1;
+}
+
+message SetIdentityUserLifecycleRequest {
+  string user_id = 1;
+}
+
+message BulkCreateUsersRequest {
+  repeated CreateUserRequest users = 1;
+  bool fail_fast = 2;
+}
+
+message BulkUserErrorReply {
+  string email = 1;
+  string code = 2;
+  string message = 3;
+}
+
+message BulkCreateUsersReply {
+  uint32 attempted = 1;
+  uint32 created_count = 2;
+  uint32 failed_count = 3;
+  repeated CreateUserReply created = 4;
+  repeated BulkUserErrorReply failed = 5;
+}
+
+message CreateSessionRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SessionReply {
+  string id = 1;
+  string user_id = 2;
+  string issued_at = 3;
+  string expires_at = 4;
+  ResourceMetadata metadata = 5;
+}
+
+message CreateApiKeyRequest {
+  string user_id = 1;
+  string name = 2;
+}
+
+message ApiKeyReply {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  uint32 version = 4;
+  string secret_preview = 5;
+  string issued_at = 6;
+  bool active = 7;
+  ResourceMetadata metadata = 8;
+}
+
+message CreateApiKeyReply {
+  string id = 1;
+  string name = 2;
+  string secret = 3;
+  string secret_preview = 4;
+  string user_id = 5;
+  uint32 version = 6;
+  string issued_at = 7;
+  bool active = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ManageApiKeyRequest {
+  string api_key_id = 1;
+}
+
+message GetIdentitySummaryRequest {}
+
+message GetIdentityCredentialLifecycleRequest {}
+
+enum IdentityCredentialLifecycleKind {
+  IDENTITY_CREDENTIAL_LIFECYCLE_KIND_UNSPECIFIED = 0;
+  IDENTITY_CREDENTIAL_LIFECYCLE_KIND_SESSION = 1;
+  IDENTITY_CREDENTIAL_LIFECYCLE_KIND_API_KEY = 2;
+  IDENTITY_CREDENTIAL_LIFECYCLE_KIND_WORKLOAD_TOKEN = 3;
+  IDENTITY_CREDENTIAL_LIFECYCLE_KIND_SECRET_VERSION = 4;
+}
+
+enum IdentityCredentialLifecycleState {
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_UNSPECIFIED = 0;
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_ACTIVE = 1;
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_EXPIRING = 2;
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_EXPIRED = 3;
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_INACTIVE = 4;
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_REVOKED = 5;
+  IDENTITY_CREDENTIAL_LIFECYCLE_STATE_SUSPENDED_OWNER = 6;
+}
+
+enum IdentityCredentialSecretSourceKind {
+  IDENTITY_CREDENTIAL_SECRET_SOURCE_KIND_UNSPECIFIED = 0;
+  IDENTITY_CREDENTIAL_SECRET_SOURCE_KIND_API_KEY = 1;
+  IDENTITY_CREDENTIAL_SECRET_SOURCE_KIND_WORKLOAD_TOKEN = 2;
+}
+
+message IdentityUserSummaryReply {
+  uint32 total = 1;
+  uint32 active = 2;
+  uint32 suspended = 3;
+}
+
+message IdentitySessionSummaryReply {
+  uint32 total = 1;
+  uint32 active = 2;
+  uint32 expired = 3;
+}
+
+message IdentityApiKeySummaryReply {
+  uint32 total = 1;
+  uint32 active = 2;
+  uint32 inactive = 3;
+}
+
+message IdentityProjectWorkloadIdentitySummaryReply {
+  string project_id = 1;
+  uint32 total = 2;
+  uint32 active = 3;
+  uint32 inactive = 4;
+}
+
+message IdentityWorkloadIdentitySummaryReply {
+  uint32 total = 1;
+  uint32 active = 2;
+  uint32 inactive = 3;
+  uint32 unscoped = 4;
+  repeated IdentityProjectWorkloadIdentitySummaryReply by_project = 5;
+}
+
+message IdentityCredentialLifecycleKindSummaryReply {
+  IdentityCredentialLifecycleKind kind = 1;
+  uint32 total = 2;
+}
+
+message IdentityCredentialLifecycleStateSummaryReply {
+  IdentityCredentialLifecycleState state = 1;
+  uint32 total = 2;
+}
+
+message IdentityCredentialLifecycleSummaryReply {
+  uint32 total = 1;
+  repeated IdentityCredentialLifecycleKindSummaryReply by_kind = 2;
+  repeated IdentityCredentialLifecycleStateSummaryReply by_state = 3;
+}
+
+message IdentityCredentialLifecycleEntryReply {
+  IdentityCredentialLifecycleKind kind = 1;
+  string id = 2;
+  IdentityCredentialLifecycleState state = 3;
+  string ownership_scope = 4;
+  optional string owner_id = 5;
+  string issued_at = 6;
+  optional string expires_at = 7;
+  optional string principal_subject = 8;
+  optional IdentityCredentialSecretSourceKind source_kind = 9;
+  optional string source_id = 10;
+  optional uint32 version = 11;
+  optional string secret_preview = 12;
+}
+
+message IdentityCredentialLifecycleReportReply {
+  string generated_at = 1;
+  IdentityCredentialLifecycleSummaryReply summary = 2;
+  repeated IdentityCredentialLifecycleEntryReply entries = 3;
+}
+
+message IdentitySummaryReply {
+  IdentityUserSummaryReply users = 1;
+  IdentitySessionSummaryReply sessions = 2;
+  IdentityApiKeySummaryReply api_keys = 3;
+  IdentityWorkloadIdentitySummaryReply workload_identities = 4;
+  IdentityCredentialLifecycleSummaryReply credential_lifecycle = 5;
+}
+
+message CreateWorkloadIdentityRequest {
+  string subject = 1;
+  string display_name = 2;
+  string project_id = 3;
+  string workload_id = 4;
+  repeated string audiences = 5;
+  uint64 ttl_seconds = 6;
+}
+
+message WorkloadCredentialReply {
+  uint32 version = 1;
+  string secret_preview = 2;
+  string issued_at = 3;
+  string expires_at = 4;
+}
+
+message WorkloadIdentityReply {
+  string id = 1;
+  PrincipalIdentity principal = 2;
+  string display_name = 3;
+  optional string project_id = 4;
+  optional string workload_id = 5;
+  repeated string audiences = 6;
+  bool active = 7;
+  uint32 credential_version = 8;
+  string expires_at = 9;
+  WorkloadCredentialReply credential = 10;
+  ResourceMetadata metadata = 11;
+}
+
+message IssueWorkloadIdentityReply {
+  WorkloadIdentityReply identity = 1;
+  string token = 2;
+  reserved 3;
+}
+
+message ListWorkloadIdentitiesRequest {}
+
+message ListWorkloadIdentitiesReply {
+  repeated WorkloadIdentityReply identities = 1;
+}
+
+message ManageWorkloadIdentityRequest {
+  string workload_identity_id = 1;
+}
+
+service IdentityService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListUsers(ListIdentityUsersRequest) returns (ListIdentityUsersReply);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserReply);
+  rpc GetUser(GetIdentityUserRequest) returns (CreateUserReply);
+  rpc SuspendUser(SetIdentityUserLifecycleRequest) returns (CreateUserReply);
+  rpc ReactivateUser(SetIdentityUserLifecycleRequest) returns (CreateUserReply);
+  rpc BulkCreateUsers(BulkCreateUsersRequest) returns (BulkCreateUsersReply);
+  rpc CreateSession(CreateSessionRequest) returns (SessionReply);
+  rpc CreateApiKey(CreateApiKeyRequest) returns (CreateApiKeyReply);
+  rpc RotateApiKey(ManageApiKeyRequest) returns (CreateApiKeyReply);
+  rpc RevokeApiKey(ManageApiKeyRequest) returns (ApiKeyReply);
+  rpc GetIdentitySummary(GetIdentitySummaryRequest) returns (IdentitySummaryReply);
+  rpc GetIdentityCredentialLifecycle(GetIdentityCredentialLifecycleRequest) returns (IdentityCredentialLifecycleReportReply);
+  rpc IssueWorkloadIdentity(CreateWorkloadIdentityRequest) returns (IssueWorkloadIdentityReply);
+  rpc RotateWorkloadIdentity(ManageWorkloadIdentityRequest) returns (IssueWorkloadIdentityReply);
+  rpc RevokeWorkloadIdentity(ManageWorkloadIdentityRequest) returns (WorkloadIdentityReply);
+  rpc ListWorkloadIdentities(ListWorkloadIdentitiesRequest) returns (ListWorkloadIdentitiesReply);
+}
+
+message CreateOrganizationRequest {
+  string name = 1;
+  string slug = 2;
+}
+
+message CreateOrganizationReply {
+  string id = 1;
+  string slug = 2;
+}
+
+service TenancyService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc CreateOrganization(CreateOrganizationRequest) returns (CreateOrganizationReply);
+}
+
+message CreateWorkloadRequest {
+  string project_id = 1;
+  string name = 2;
+  string kind = 3;
+  optional string image = 4;
+  repeated string command = 5;
+  uint32 replicas = 6;
+  string priority = 7;
+}
+
+message WorkloadReply {
+  string id = 1;
+  string project_id = 2;
+  string name = 3;
+  string kind = 4;
+  optional string image = 5;
+  repeated string command = 6;
+  uint32 replicas = 7;
+  string priority = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListWorkloadsReply {
+  repeated WorkloadReply items = 1;
+}
+
+message CreateDeploymentRequest {
+  string workload_id = 1;
+  string release_channel = 2;
+  string strategy = 3;
+  string desired_revision = 4;
+}
+
+message DeploymentReply {
+  string id = 1;
+  string workload_id = 2;
+  string release_channel = 3;
+  string strategy = 4;
+  string desired_revision = 5;
+  string rollout_state = 6;
+  ResourceMetadata metadata = 7;
+}
+
+message ListDeploymentsReply {
+  repeated DeploymentReply items = 1;
+}
+
+enum ShardPlacementBindingScope {
+  SHARD_PLACEMENT_BINDING_SCOPE_UNSPECIFIED = 0;
+  SHARD_PLACEMENT_BINDING_SCOPE_DEPLOYMENT = 1;
+  SHARD_PLACEMENT_BINDING_SCOPE_REPLICA = 2;
+}
+
+message ShardPlacementSpreadPolicy {
+  uint32 min_distinct_cells = 1;
+  uint32 min_distinct_nodes = 2;
+}
+
+enum ShardPlacementFailoverMode {
+  SHARD_PLACEMENT_FAILOVER_MODE_UNSPECIFIED = 0;
+  SHARD_PLACEMENT_FAILOVER_MODE_DISABLED = 1;
+  SHARD_PLACEMENT_FAILOVER_MODE_COLD_STANDBY = 2;
+  SHARD_PLACEMENT_FAILOVER_MODE_WARM_STANDBY = 3;
+  SHARD_PLACEMENT_FAILOVER_MODE_ACTIVE_PASSIVE = 4;
+}
+
+message ShardPlacementFailoverRule {
+  ShardPlacementFailoverMode mode = 1;
+  optional string failover_group = 2;
+  uint32 priority = 3;
+}
+
+message CreateShardPlacementRequest {
+  string deployment_id = 1;
+  ShardPlacementBindingScope binding_scope = 2;
+  optional uint32 replica_ordinal = 3;
+  string cell_id = 4;
+  optional string node_id = 5;
+  ShardPlacementSpreadPolicy spread = 6;
+  ShardPlacementFailoverRule failover = 7;
+}
+
+message ShardPlacementReply {
+  string id = 1;
+  string deployment_id = 2;
+  ShardPlacementBindingScope binding_scope = 3;
+  optional uint32 replica_ordinal = 4;
+  string cell_id = 5;
+  optional string node_id = 6;
+  ShardPlacementSpreadPolicy spread = 7;
+  ShardPlacementFailoverRule failover = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListShardPlacementsReply {
+  repeated ShardPlacementReply items = 1;
+}
+
+service ControlService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListWorkloads(HealthRequest) returns (ListWorkloadsReply);
+  rpc CreateWorkload(CreateWorkloadRequest) returns (WorkloadReply);
+  rpc ListDeployments(HealthRequest) returns (ListDeploymentsReply);
+  rpc CreateDeployment(CreateDeploymentRequest) returns (DeploymentReply);
+  rpc ListShardPlacements(HealthRequest) returns (ListShardPlacementsReply);
+  rpc CreateShardPlacement(CreateShardPlacementRequest) returns (ShardPlacementReply);
+}
+
+enum ContainerExecutionClass {
+  CONTAINER_EXECUTION_CLASS_UNSPECIFIED = 0;
+  CONTAINER_EXECUTION_CLASS_SERVICE = 1;
+  CONTAINER_EXECUTION_CLASS_JOB = 2;
+}
+
+enum ContainerWorkloadReconciliationState {
+  CONTAINER_WORKLOAD_RECONCILIATION_STATE_UNSPECIFIED = 0;
+  CONTAINER_WORKLOAD_RECONCILIATION_STATE_PLANNED = 1;
+  CONTAINER_WORKLOAD_RECONCILIATION_STATE_BLOCKED = 2;
+}
+
+message GetContainerServiceSummaryRequest {}
+
+message CreateContainerNodePoolRequest {
+  string project_id = 1;
+  string name = 2;
+  string region = 3;
+  string scheduler_pool = 4;
+  uint32 min_nodes = 5;
+  uint32 desired_nodes = 6;
+  uint32 max_nodes = 7;
+}
+
+message ContainerNodePoolReply {
+  string id = 1;
+  string project_id = 2;
+  string name = 3;
+  string region = 4;
+  string scheduler_pool = 5;
+  uint32 min_nodes = 6;
+  uint32 desired_nodes = 7;
+  uint32 max_nodes = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListContainerNodePoolsRequest {}
+
+message ListContainerNodePoolsReply {
+  repeated ContainerNodePoolReply items = 1;
+}
+
+message GetContainerNodePoolRequest {
+  string node_pool_id = 1;
+}
+
+message DeleteContainerNodePoolRequest {
+  string node_pool_id = 1;
+  optional string if_match_etag = 2;
+  optional uint64 record_version = 3;
+}
+
+message CreateContainerClusterRequest {
+  string project_id = 1;
+  string name = 2;
+  string node_pool_id = 3;
+}
+
+message ContainerClusterReply {
+  string id = 1;
+  string project_id = 2;
+  string name = 3;
+  optional string node_pool_id = 4;
+  string region = 5;
+  string scheduler_pool = 6;
+  uint32 desired_nodes = 7;
+  ResourceMetadata metadata = 8;
+}
+
+message ListContainerClustersRequest {}
+
+message ListContainerClustersReply {
+  repeated ContainerClusterReply items = 1;
+}
+
+message GetContainerClusterRequest {
+  string cluster_id = 1;
+}
+
+message DeleteContainerClusterRequest {
+  string cluster_id = 1;
+  optional string if_match_etag = 2;
+  optional uint64 record_version = 3;
+}
+
+message CreateContainerWorkloadRequest {
+  string cluster_id = 1;
+  string project_id = 2;
+  string name = 3;
+  string image = 4;
+  uint32 desired_replicas = 5;
+  optional ContainerExecutionClass execution_class = 6;
+  repeated string command = 7;
+}
+
+message ContainerWorkloadReply {
+  string id = 1;
+  string cluster_id = 2;
+  string project_id = 3;
+  string name = 4;
+  string image = 5;
+  uint32 desired_replicas = 6;
+  ContainerExecutionClass execution_class = 7;
+  repeated string command = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListContainerWorkloadsRequest {}
+
+message ListContainerWorkloadsReply {
+  repeated ContainerWorkloadReply items = 1;
+}
+
+message GetContainerWorkloadRequest {
+  string workload_id = 1;
+}
+
+message DeleteContainerWorkloadRequest {
+  string workload_id = 1;
+  optional string if_match_etag = 2;
+  optional uint64 record_version = 3;
+}
+
+message ContainerWorkloadReconciliationReply {
+  string workload_id = 1;
+  string cluster_id = 2;
+  string project_id = 3;
+  optional string node_pool_id = 4;
+  optional string node_pool_name = 5;
+  string workload_name = 6;
+  string image = 7;
+  uint32 desired_replicas = 8;
+  ContainerExecutionClass execution_class = 9;
+  repeated string command = 10;
+  optional string region = 11;
+  optional string scheduler_pool = 12;
+  ContainerWorkloadReconciliationState state = 13;
+  optional string detail = 14;
+  string reconcile_digest = 15;
+  string event_idempotency_key = 16;
+  string reconciled_at = 17;
+  ResourceMetadata metadata = 18;
+}
+
+message ListContainerReconciliationsRequest {}
+
+message ListContainerReconciliationsReply {
+  repeated ContainerWorkloadReconciliationReply items = 1;
+}
+
+message ContainerValueCountReply {
+  string value = 1;
+  uint32 count = 2;
+}
+
+message ContainerNodePoolWorkloadSummaryReply {
+  string node_pool_id = 1;
+  string project_id = 2;
+  string name = 3;
+  string region = 4;
+  string scheduler_pool = 5;
+  uint32 min_nodes = 6;
+  uint32 desired_nodes = 7;
+  uint32 max_nodes = 8;
+  optional string cluster_id = 9;
+  uint32 workload_count = 10;
+  uint64 total_desired_replicas = 11;
+}
+
+message ContainerClusterWorkloadSummaryReply {
+  string cluster_id = 1;
+  string project_id = 2;
+  optional string node_pool_id = 3;
+  optional string node_pool_name = 4;
+  string region = 5;
+  string scheduler_pool = 6;
+  uint32 min_nodes = 7;
+  uint32 desired_nodes = 8;
+  uint32 max_nodes = 9;
+  uint32 workload_count = 10;
+  uint64 total_desired_replicas = 11;
+}
+
+message ContainerServiceSummaryReply {
+  uint32 node_pool_count = 1;
+  uint32 cluster_count = 2;
+  uint32 workload_count = 3;
+  uint64 total_min_nodes = 4;
+  uint64 total_desired_nodes = 5;
+  uint64 total_max_nodes = 6;
+  uint64 total_desired_replicas = 7;
+  uint32 active_project_count = 8;
+  repeated ContainerValueCountReply execution_class_totals = 9;
+  repeated ContainerValueCountReply region_totals = 10;
+  repeated ContainerNodePoolWorkloadSummaryReply node_pool_summaries = 11;
+  repeated ContainerClusterWorkloadSummaryReply cluster_summaries = 12;
+}
+
+message ReconcileContainerWorkloadsRequest {}
+
+message ContainerReconcileSummaryReply {
+  uint32 reconciled_workloads = 1;
+  uint32 created_records = 2;
+  uint32 updated_records = 3;
+  uint32 replayed_records = 4;
+  uint32 retired_records = 5;
+  uint32 blocked_records = 6;
+}
+
+message ListContainerOutboxRequest {}
+
+message ContainerOutboxMessageReply {
+  string id = 1;
+  string topic = 2;
+  optional string idempotency_key = 3;
+  string payload_json = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  string state = 7;
+}
+
+message ListContainerOutboxReply {
+  repeated ContainerOutboxMessageReply values = 1;
+}
+
+message DeleteContainerResourceReply {}
+
+service ContainerService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc GetContainerServiceSummary(GetContainerServiceSummaryRequest) returns (ContainerServiceSummaryReply);
+  rpc ListNodePools(ListContainerNodePoolsRequest) returns (ListContainerNodePoolsReply);
+  rpc CreateNodePool(CreateContainerNodePoolRequest) returns (ContainerNodePoolReply);
+  rpc GetNodePool(GetContainerNodePoolRequest) returns (ContainerNodePoolReply);
+  rpc DeleteNodePool(DeleteContainerNodePoolRequest) returns (DeleteContainerResourceReply);
+  rpc ListClusters(ListContainerClustersRequest) returns (ListContainerClustersReply);
+  rpc CreateCluster(CreateContainerClusterRequest) returns (ContainerClusterReply);
+  rpc GetCluster(GetContainerClusterRequest) returns (ContainerClusterReply);
+  rpc DeleteCluster(DeleteContainerClusterRequest) returns (DeleteContainerResourceReply);
+  rpc ListWorkloads(ListContainerWorkloadsRequest) returns (ListContainerWorkloadsReply);
+  rpc CreateWorkload(CreateContainerWorkloadRequest) returns (ContainerWorkloadReply);
+  rpc GetWorkload(GetContainerWorkloadRequest) returns (ContainerWorkloadReply);
+  rpc DeleteWorkload(DeleteContainerWorkloadRequest) returns (DeleteContainerResourceReply);
+  rpc ListReconciliations(ListContainerReconciliationsRequest) returns (ListContainerReconciliationsReply);
+  rpc ReconcileWorkloads(ReconcileContainerWorkloadsRequest) returns (ContainerReconcileSummaryReply);
+  rpc ListOutbox(ListContainerOutboxRequest) returns (ListContainerOutboxReply);
+}
+
+message CreateSchedulerNodeRequest {
+  string region = 1;
+  optional string scheduler_pool = 2;
+  uint32 cpu_millis = 3;
+  uint64 memory_mb = 4;
+}
+
+message SchedulerNodeReply {
+  string id = 1;
+  string region = 2;
+  string scheduler_pool = 3;
+  uint32 cpu_millis = 4;
+  uint64 memory_mb = 5;
+  uint32 free_cpu_millis = 6;
+  uint64 free_memory_mb = 7;
+  bool drained = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListSchedulerNodesRequest {}
+
+message ListSchedulerNodesReply {
+  repeated SchedulerNodeReply items = 1;
+}
+
+message RequestSchedulerPlacementRequest {
+  string workload_id = 1;
+  uint32 cpu_millis = 2;
+  uint64 memory_mb = 3;
+  optional string region = 4;
+  optional string scheduler_pool = 5;
+}
+
+message SchedulerPlacementReply {
+  string workload_id = 1;
+  optional string node_id = 2;
+  double score = 3;
+  string reason = 4;
+}
+
+message ListSchedulerPlacementsRequest {}
+
+message ListSchedulerPlacementsReply {
+  repeated SchedulerPlacementReply items = 1;
+}
+
+service SchedulerService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListNodes(ListSchedulerNodesRequest) returns (ListSchedulerNodesReply);
+  rpc CreateNode(CreateSchedulerNodeRequest) returns (SchedulerNodeReply);
+  rpc ListPlacements(ListSchedulerPlacementsRequest) returns (ListSchedulerPlacementsReply);
+  rpc RequestPlacement(RequestSchedulerPlacementRequest) returns (SchedulerPlacementReply);
+}
+
+message CreateIngressRouteBackend {
+  string target = 1;
+  uint32 weight = 2;
+  string region = 3;
+  string cell = 4;
+  bool canary = 5;
+}
+
+enum IngressLocalityMode {
+  INGRESS_LOCALITY_MODE_UNSPECIFIED = 0;
+  INGRESS_LOCALITY_MODE_NONE = 1;
+  INGRESS_LOCALITY_MODE_REGION = 2;
+  INGRESS_LOCALITY_MODE_CELL = 3;
+}
+
+message IngressCanarySteeringPolicy {
+  uint32 traffic_percent = 1;
+}
+
+message IngressSteeringPolicy {
+  IngressLocalityMode locality_mode = 1;
+  bool fallback_to_any_healthy = 2;
+  IngressCanarySteeringPolicy canary = 3;
+}
+
+enum EdgeExposureIntent {
+  EDGE_EXPOSURE_UNSPECIFIED = 0;
+  EDGE_EXPOSURE_PUBLIC = 1;
+  EDGE_EXPOSURE_PRIVATE = 2;
+}
+
+message EdgeDnsBinding {
+  string zone_id = 1;
+}
+
+message EdgeSecurityPolicyAttachment {
+  string inspection_profile_id = 1;
+}
+
+message EdgePrivateNetworkAttachment {
+  string private_network_id = 1;
+}
+
+message EdgePublicationTarget {
+  string id = 1;
+  string cell = 2;
+  string region = 3;
+  string failover_group = 4;
+  bool drain = 5;
+  string tls_owner = 6;
+}
+
+message EdgePublication {
+  EdgeExposureIntent exposure = 1;
+  EdgeDnsBinding dns_binding = 2;
+  EdgeSecurityPolicyAttachment security_policy = 3;
+  EdgePrivateNetworkAttachment private_network = 4;
+  repeated EdgePublicationTarget targets = 5;
+}
+
+message IngressRouteDnsBindingEvaluationSnapshot {
+  string zone_id = 1;
+  string domain = 2;
+  bool verified = 3;
+  string rationale = 4;
+}
+
+message IngressRouteSecurityPolicyEvaluationSnapshot {
+  string inspection_profile_id = 1;
+  string inspection_profile_name = 2;
+  repeated string blocked_countries = 3;
+  uint32 min_waf_score = 4;
+  uint32 max_bot_score = 5;
+  string ddos_mode = 6;
+  string rationale = 7;
+}
+
+message IngressRoutePrivateNetworkEvaluationSnapshot {
+  string private_network_id = 1;
+  string private_network_name = 2;
+  string cidr = 3;
+  string rationale = 4;
+}
+
+message IngressRoutePublicationEvaluationSnapshot {
+  string captured_at = 1;
+  bool admitted = 2;
+  string rationale = 3;
+  IngressRouteDnsBindingEvaluationSnapshot dns_binding = 4;
+  IngressRouteSecurityPolicyEvaluationSnapshot security_policy = 5;
+  IngressRoutePrivateNetworkEvaluationSnapshot private_network = 6;
+}
+
+message CreateIngressRouteRequest {
+  string hostname = 1;
+  string protocol = 2;
+  string tls_mode = 3;
+  repeated CreateIngressRouteBackend backends = 4;
+  bool sticky_sessions = 5;
+  EdgePublication publication = 6;
+  string change_request_id = 7;
+  IngressSteeringPolicy steering_policy = 8;
+}
+
+message IngressRouteReply {
+  string id = 1;
+  string hostname = 2;
+  string protocol = 3;
+  string tls_mode = 4;
+  uint32 backend_count = 5;
+  EdgePublication publication = 6;
+  IngressRoutePublicationEvaluationSnapshot publication_evaluation = 7;
+}
+
+message EvaluateIngressRouteRequest {
+  string hostname = 1;
+  string protocol = 2;
+  string source_identity = 3;
+  string client_ip = 4;
+  string session_key = 5;
+  string private_network_id = 6;
+  string preferred_region = 7;
+  string preferred_cell = 8;
+}
+
+message EvaluateIngressRouteReply {
+  bool admitted = 1;
+  string route_id = 2;
+  string selected_backend_id = 3;
+  string selected_backend = 4;
+  string reason = 5;
+  string circuit_state = 6;
+}
+
+message ReportIngressBackendHealthRequest {
+  string route_id = 1;
+  string backend_id = 2;
+  bool healthy = 3;
+  uint64 observed_latency_ms = 4;
+  string message = 5;
+}
+
+message RecordIngressCircuitEventRequest {
+  string route_id = 1;
+  bool success = 2;
+  string reason = 3;
+}
+
+message QueryIngressFlowAuditRequest {
+  string verdict = 1;
+  string route_id = 2;
+  string hostname = 3;
+  string source_identity = 4;
+  uint32 limit = 5;
+}
+
+message QueryIngressFlowAuditReply {
+  repeated string audit_ids = 1;
+}
+
+message SummarizeIngressFlowAuditReply {
+  uint32 total = 1;
+  uint32 allow = 2;
+  uint32 deny = 3;
+}
+
+service IngressService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc CreateRoute(CreateIngressRouteRequest) returns (IngressRouteReply);
+  rpc EvaluateRoute(EvaluateIngressRouteRequest) returns (EvaluateIngressRouteReply);
+  rpc ReportBackendHealth(ReportIngressBackendHealthRequest) returns (IngressRouteReply);
+  rpc RecordCircuitEvent(RecordIngressCircuitEventRequest) returns (EvaluateIngressRouteReply);
+  rpc QueryFlowAudit(QueryIngressFlowAuditRequest) returns (QueryIngressFlowAuditReply);
+  rpc SummarizeFlowAudit(QueryIngressFlowAuditRequest) returns (SummarizeIngressFlowAuditReply);
+}
+
+enum StorageResourceKind {
+  STORAGE_RESOURCE_KIND_UNSPECIFIED = 0;
+  STORAGE_RESOURCE_KIND_BUCKET = 1;
+  STORAGE_RESOURCE_KIND_VOLUME = 2;
+  STORAGE_RESOURCE_KIND_DATABASE = 3;
+}
+
+enum StorageMedium {
+  STORAGE_MEDIUM_UNSPECIFIED = 0;
+  STORAGE_MEDIUM_OBJECT = 1;
+  STORAGE_MEDIUM_BLOCK = 2;
+  STORAGE_MEDIUM_FILE = 3;
+  STORAGE_MEDIUM_ARCHIVE = 4;
+}
+
+enum StorageFailureDomainScope {
+  STORAGE_FAILURE_DOMAIN_SCOPE_UNSPECIFIED = 0;
+  STORAGE_FAILURE_DOMAIN_SCOPE_CELL = 1;
+  STORAGE_FAILURE_DOMAIN_SCOPE_REGION = 2;
+  STORAGE_FAILURE_DOMAIN_SCOPE_CROSS_REGION = 3;
+}
+
+message StorageBindingReply {
+  string storage_class_id = 1;
+  string durability_tier_id = 2;
+}
+
+message StorageClassReply {
+  string id = 1;
+  string name = 2;
+  StorageMedium medium = 3;
+  repeated StorageResourceKind supported_resource_kinds = 4;
+}
+
+message DurabilityTierReply {
+  string id = 1;
+  string name = 2;
+  uint32 minimum_replica_count = 3;
+  StorageFailureDomainScope failure_domain_scope = 4;
+  repeated StorageResourceKind supported_resource_kinds = 5;
+}
+
+message ListStorageClassesRequest {}
+
+message ListStorageClassesReply {
+  repeated StorageClassReply items = 1;
+}
+
+message CreateStorageClassRequest {
+  string name = 1;
+  StorageMedium medium = 2;
+  repeated StorageResourceKind supported_resource_kinds = 3;
+}
+
+message ListDurabilityTiersRequest {}
+
+message ListDurabilityTiersReply {
+  repeated DurabilityTierReply items = 1;
+}
+
+message CreateDurabilityTierRequest {
+  string name = 1;
+  uint32 minimum_replica_count = 2;
+  StorageFailureDomainScope failure_domain_scope = 3;
+  repeated StorageResourceKind supported_resource_kinds = 4;
+}
+
+message ListBucketsRequest {}
+
+message CreateBucketRequest {
+  string name = 1;
+  string owner_id = 2;
+  string storage_class_id = 3;
+  string durability_tier_id = 4;
+}
+
+message BucketReply {
+  string id = 1;
+  string name = 2;
+  string owner_id = 3;
+  StorageBindingReply storage_binding = 4;
+}
+
+message ListBucketsReply {
+  repeated BucketReply items = 1;
+}
+
+message ListVolumesRequest {}
+
+message CreateVolumeRequest {
+  string name = 1;
+  uint32 size_gb = 2;
+  string storage_class_id = 3;
+  string durability_tier_id = 4;
+}
+
+message VolumeReply {
+  string id = 1;
+  string name = 2;
+  uint32 size_gb = 3;
+  string attached_to = 4;
+  StorageBindingReply storage_binding = 5;
+}
+
+message ListVolumesReply {
+  repeated VolumeReply items = 1;
+}
+
+service StorageService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListStorageClasses(ListStorageClassesRequest) returns (ListStorageClassesReply);
+  rpc CreateStorageClass(CreateStorageClassRequest) returns (StorageClassReply);
+  rpc ListDurabilityTiers(ListDurabilityTiersRequest) returns (ListDurabilityTiersReply);
+  rpc CreateDurabilityTier(CreateDurabilityTierRequest) returns (DurabilityTierReply);
+  rpc ListBuckets(ListBucketsRequest) returns (ListBucketsReply);
+  rpc CreateBucket(CreateBucketRequest) returns (BucketReply);
+  rpc ListVolumes(ListVolumesRequest) returns (ListVolumesReply);
+  rpc CreateVolume(CreateVolumeRequest) returns (VolumeReply);
+  rpc DescribeVolumeSnapshotPolicy(StorageVolumeScopeRequest) returns (VolumeSnapshotPolicyReply);
+  rpc DescribeVolumeRecoveryPoint(StorageVolumeScopeRequest) returns (VolumeRecoveryPointReply);
+  rpc ListVolumeRecoveryHistory(StorageVolumeScopeRequest) returns (ListVolumeRecoveryHistoryReply);
+  rpc ListVolumeRestoreActions(StorageVolumeScopeRequest) returns (ListVolumeRestoreActionsReply);
+  rpc CreateVolumeRestoreAction(CreateVolumeRestoreActionRequest) returns (VolumeRestoreActionReply);
+  rpc DescribeVolumeRestoreAction(DescribeVolumeRestoreActionRequest) returns (VolumeRestoreActionReply);
+}
+
+message CreateManagedDatabaseRequest {
+  string engine = 1;
+  string version = 2;
+  uint32 storage_gb = 3;
+  uint32 replicas = 4;
+  bool tls_required = 5;
+  string primary_region = 6;
+  string storage_class_id = 7;
+  string durability_tier_id = 8;
+}
+
+message ManagedDatabaseReply {
+  string id = 1;
+  string engine = 2;
+  string version = 3;
+  uint32 replicas = 4;
+  string lifecycle_state = 5;
+  string primary_region = 6;
+  string storage_class = 7;
+  StorageBindingReply storage_binding = 8;
+}
+
+message CreateDatabaseBackupRequest {
+  string database_id = 1;
+  string kind = 2;
+  string point_in_time_rfc3339 = 3;
+  string reason = 4;
+}
+
+message DataBackupReply {
+  string id = 1;
+  string database_id = 2;
+  string kind = 3;
+  string state = 4;
+  string snapshot_uri = 5;
+  BackupStorageRecoveryPoint storage_recovery_point = 6;
+  string storage_recovery_point_selection_reason = 7;
+  string storage_recovery_point_state_reason = 8;
+  BackupArtifactManifest backup_artifact_manifest = 9;
+}
+
+message RestoreManagedDatabaseRequest {
+  string database_id = 1;
+  string backup_id = 2;
+  string point_in_time_rfc3339 = 3;
+  string reason = 4;
+}
+
+message DataRestoreReply {
+  string id = 1;
+  string database_id = 2;
+  string backup_id = 3;
+  string state = 4;
+  string storage_restore_selection_reason = 5;
+  string storage_restore_selected_recovery_point_state_reason = 6;
+  BackupStorageRecoveryPoint storage_restore_selected_recovery_point = 7;
+  RestoreStorageSourceMode storage_restore_source_mode = 8;
+  BackupStorageRecoveryPoint storage_restore_backup_correlated_recovery_point = 9;
+}
+
+enum RestoreStorageSourceMode {
+  RESTORE_STORAGE_SOURCE_MODE_UNSPECIFIED = 0;
+  RESTORE_STORAGE_SOURCE_MODE_BACKUP_CORRELATED_STORAGE_LINEAGE = 1;
+  RESTORE_STORAGE_SOURCE_MODE_LATEST_READY_FALLBACK = 2;
+}
+
+message BackupStorageRecoveryPoint {
+  string volume_id = 1;
+  uint64 version = 2;
+  uint64 execution_count = 3;
+  string etag = 4;
+  string captured_at = 5;
+}
+
+enum BackupArtifactKind {
+  BACKUP_ARTIFACT_KIND_UNSPECIFIED = 0;
+  BACKUP_ARTIFACT_KIND_SNAPSHOT_BUNDLE = 1;
+}
+
+enum BackupArtifactVerificationState {
+  BACKUP_ARTIFACT_VERIFICATION_STATE_UNSPECIFIED = 0;
+  BACKUP_ARTIFACT_VERIFICATION_STATE_VERIFIED = 1;
+}
+
+message BackupArtifactVerificationResult {
+  BackupArtifactVerificationState state = 1;
+  string verified_at = 2;
+  string verifier = 3;
+  string observed_sha256 = 4;
+}
+
+message BackupArtifactDescriptor {
+  BackupArtifactKind kind = 1;
+  string object_location = 2;
+  string sha256 = 3;
+  uint64 size_bytes = 4;
+  string key_ref = 5;
+  BackupArtifactVerificationResult verification = 6;
+}
+
+message BackupArtifactManifest {
+  uint32 schema_version = 1;
+  string generated_at = 2;
+  string manifest_object_location = 3;
+  string manifest_sha256 = 4;
+  uint64 manifest_size_bytes = 5;
+  string manifest_key_ref = 6;
+  BackupArtifactVerificationResult manifest_verification = 7;
+  repeated BackupArtifactDescriptor artifacts = 8;
+}
+
+message DescribeBackupStorageLineageRequest {
+  string backup_id = 1;
+}
+
+message BackupStorageLineageInspection {
+  string backup_id = 1;
+  string storage_volume_id = 2;
+  BackupStorageRecoveryPoint recovery_point = 3;
+  string selection_reason = 4;
+  string recovery_point_state_reason = 5;
+}
+
+message DescribeRestoreStorageLineageRequest {
+  string restore_id = 1;
+}
+
+message RestoreStorageLineageInspection {
+  string restore_id = 1;
+  RestoreStorageSourceMode source_mode = 2;
+  string storage_volume_id = 3;
+  string restore_action_id = 4;
+  string restore_workflow_id = 5;
+  BackupStorageRecoveryPoint selected_recovery_point = 6;
+  BackupStorageRecoveryPoint backup_correlated_recovery_point = 7;
+  string selection_reason = 8;
+  string selected_recovery_point_state_reason = 9;
+}
+
+message FailoverManagedDatabaseRequest {
+  string database_id = 1;
+  string target_replica_id = 2;
+  string target_region = 3;
+  string reason = 4;
+}
+
+message DataFailoverReply {
+  string id = 1;
+  string database_id = 2;
+  string from_replica_id = 3;
+  string to_replica_id = 4;
+  string state = 5;
+}
+
+message DataChecksumCatalogEntry {
+  string artifact_uri = 1;
+  string checksum = 2;
+  uint64 size_bytes = 3;
+}
+
+message DataChecksumCatalog {
+  string algorithm = 1;
+  repeated DataChecksumCatalogEntry entries = 2;
+  string checksum = 3;
+}
+
+message SignedDataTransferManifest {
+  uint32 manifest_version = 1;
+  string flow = 2;
+  string resource_kind = 3;
+  string resource_id = 4;
+  string artifact_format = 5;
+  string artifact_root_uri = 6;
+  string checksum_catalog_checksum = 7;
+  string signing_key_ref = 8;
+  string signature_scheme = 9;
+  string signature = 10;
+  string signed_at = 11;
+}
+
+message CreateDataExportRequest {
+  string resource_id = 1;
+  string artifact_format = 2;
+  string signing_key_ref = 3;
+  string reason = 4;
+}
+
+message DataExportReply {
+  string id = 1;
+  string resource_kind = 2;
+  string resource_id = 3;
+  string state = 4;
+  string requested_by = 5;
+  string created_at = 6;
+  string completed_at = 7;
+  string reason = 8;
+  string artifact_root_uri = 9;
+  string manifest_uri = 10;
+  string checksum_catalog_uri = 11;
+  SignedDataTransferManifest signed_manifest = 12;
+  DataChecksumCatalog checksum_catalog = 13;
+}
+
+message CreateDataImportRequest {
+  SignedDataTransferManifest signed_manifest = 1;
+  DataChecksumCatalog checksum_catalog = 2;
+  string target_resource_id = 3;
+  string manifest_uri = 4;
+  string checksum_catalog_uri = 5;
+  string reason = 6;
+}
+
+message DataImportReply {
+  string id = 1;
+  string resource_kind = 2;
+  string source_resource_id = 3;
+  string target_resource_id = 4;
+  string state = 5;
+  string requested_by = 6;
+  string created_at = 7;
+  string completed_at = 8;
+  string reason = 9;
+  string manifest_uri = 10;
+  string checksum_catalog_uri = 11;
+  string verification_result = 12;
+  SignedDataTransferManifest signed_manifest = 13;
+  DataChecksumCatalog checksum_catalog = 14;
+}
+
+message ListDataExportsReply {
+  repeated DataExportReply items = 1;
+}
+
+message ListDataImportsReply {
+  repeated DataImportReply items = 1;
+}
+
+message CreateDataMigrationRequest {
+  string database_id = 1;
+  string kind = 2;
+  string target_version = 3;
+  string target_region = 4;
+  string source_replica_id = 5;
+  string target_replica_id = 6;
+  string target_storage_class = 7;
+  string reason = 8;
+}
+
+message GetDataMigrationRequest {
+  string migration_id = 1;
+}
+
+message ListDataMigrationsRequest {
+  string database_id = 1;
+  string kind = 2;
+  string state = 3;
+  uint32 limit = 4;
+}
+
+message DataMigrationReply {
+  string id = 1;
+  string database_id = 2;
+  string kind = 3;
+  string state = 4;
+  string requested_by = 5;
+  string created_at = 6;
+  string started_at = 7;
+  string completed_at = 8;
+  string failed_at = 9;
+  string reason = 10;
+  string source_version = 11;
+  string target_version = 12;
+  string source_region = 13;
+  string target_region = 14;
+  string source_replica_id = 15;
+  string target_replica_id = 16;
+  string source_storage_class = 17;
+  string target_storage_class = 18;
+  string failure_reason = 19;
+}
+
+message ListDataMigrationsReply {
+  repeated DataMigrationReply items = 1;
+}
+
+message StartDataMigrationRequest {
+  string migration_id = 1;
+}
+
+message CompleteDataMigrationRequest {
+  string migration_id = 1;
+}
+
+message FailDataMigrationRequest {
+  string migration_id = 1;
+}
+
+message SetDatabaseMaintenanceRequest {
+  string database_id = 1;
+  bool enabled = 2;
+  string reason = 3;
+}
+
+service DataService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc CreateDatabase(CreateManagedDatabaseRequest) returns (ManagedDatabaseReply);
+  rpc CreateBackup(CreateDatabaseBackupRequest) returns (DataBackupReply);
+  rpc DescribeBackupStorageLineage(DescribeBackupStorageLineageRequest) returns (BackupStorageLineageInspection);
+  rpc RestoreDatabase(RestoreManagedDatabaseRequest) returns (DataRestoreReply);
+  rpc DescribeRestoreStorageLineage(DescribeRestoreStorageLineageRequest) returns (RestoreStorageLineageInspection);
+  rpc FailoverDatabase(FailoverManagedDatabaseRequest) returns (DataFailoverReply);
+  rpc SetMaintenance(SetDatabaseMaintenanceRequest) returns (ManagedDatabaseReply);
+  rpc ExportDatabase(CreateDataExportRequest) returns (DataExportReply);
+  rpc ImportDatabase(CreateDataImportRequest) returns (DataImportReply);
+  rpc ExportCache(CreateDataExportRequest) returns (DataExportReply);
+  rpc ImportCache(CreateDataImportRequest) returns (DataImportReply);
+  rpc ExportQueue(CreateDataExportRequest) returns (DataExportReply);
+  rpc ImportQueue(CreateDataImportRequest) returns (DataImportReply);
+  rpc ListExports(HealthRequest) returns (ListDataExportsReply);
+  rpc ListImports(HealthRequest) returns (ListDataImportsReply);
+  rpc CreateMigration(CreateDataMigrationRequest) returns (DataMigrationReply);
+  rpc GetMigration(GetDataMigrationRequest) returns (DataMigrationReply);
+  rpc ListMigrations(ListDataMigrationsRequest) returns (ListDataMigrationsReply);
+  rpc StartMigration(StartDataMigrationRequest) returns (DataMigrationReply);
+  rpc CompleteMigration(CompleteDataMigrationRequest) returns (DataMigrationReply);
+  rpc FailMigration(FailDataMigrationRequest) returns (DataMigrationReply);
+}
+
+message GetStreamServiceSummaryRequest {}
+
+message StreamServiceSummaryReply {
+  uint32 stream_count = 1;
+  uint32 partition_count = 2;
+  uint32 subscription_count = 3;
+  uint32 idle_stream_count = 4;
+  uint32 lagging_stream_count = 5;
+  uint32 unhealthy_subscription_count = 6;
+  uint64 total_published_messages = 7;
+  uint64 total_published_bytes = 8;
+  uint64 total_retained_records = 9;
+  uint64 total_retained_record_bytes = 10;
+  uint64 total_lag_messages = 11;
+}
+
+message ListManagedStreamsRequest {}
+
+message CreateManagedStreamRequest {
+  string name = 1;
+  optional uint32 partition_count = 2;
+  optional uint32 retention_hours = 3;
+  optional string storage_class = 4;
+  optional string owner_id = 5;
+}
+
+message ManagedStreamReply {
+  string id = 1;
+  string name = 2;
+  uint32 partition_count = 3;
+  uint32 retention_hours = 4;
+  string storage_class = 5;
+  uint64 latest_offset = 6;
+  uint64 published_messages = 7;
+  uint64 published_bytes = 8;
+  optional string last_publish_at = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListManagedStreamsReply {
+  repeated ManagedStreamReply items = 1;
+}
+
+message GetManagedStreamRequest {
+  string stream_id = 1;
+}
+
+message StreamPartitionReply {
+  string stream_id = 1;
+  uint32 partition_index = 2;
+  uint64 latest_partition_offset = 3;
+  uint64 published_messages = 4;
+  uint64 published_bytes = 5;
+  optional string last_publish_at = 6;
+  ResourceMetadata metadata = 7;
+}
+
+message ListStreamPartitionsRequest {
+  string stream_id = 1;
+}
+
+message ListStreamPartitionsReply {
+  repeated StreamPartitionReply items = 1;
+}
+
+message PublishStreamRecordRequest {
+  optional uint32 partition = 1;
+  optional string key = 2;
+  string payload = 3;
+  map<string, string> headers = 4;
+}
+
+message PublishStreamRequest {
+  string stream_id = 1;
+  repeated PublishStreamRecordRequest records = 2;
+  optional uint32 message_count = 3;
+  optional uint64 byte_count = 4;
+  optional string producer_id = 5;
+}
+
+message StreamLogRecordReply {
+  string id = 1;
+  string stream_id = 2;
+  uint32 partition_index = 3;
+  uint64 stream_offset = 4;
+  uint64 partition_offset = 5;
+  optional string producer_id = 6;
+  optional string key = 7;
+  string payload = 8;
+  map<string, string> headers = 9;
+  uint64 byte_count = 10;
+  string published_at = 11;
+  ResourceMetadata metadata = 12;
+}
+
+message StreamPublishReply {
+  ManagedStreamReply stream = 1;
+  repeated StreamPartitionReply touched_partitions = 2;
+  repeated StreamLogRecordReply appended_records = 3;
+}
+
+message GetStreamReplayRequest {
+  string stream_id = 1;
+  optional uint32 partition = 2;
+  optional uint64 after_offset = 3;
+  optional uint32 limit = 4;
+}
+
+message StreamReplayPageReply {
+  string stream_id = 1;
+  optional uint32 partition = 2;
+  uint64 after_offset = 3;
+  uint64 stream_high_watermark = 4;
+  optional uint64 partition_high_watermark = 5;
+  optional uint64 next_offset = 6;
+  repeated StreamLogRecordReply items = 7;
+}
+
+message GetStreamLagSummaryRequest {
+  string stream_id = 1;
+}
+
+message StreamLagSummaryReply {
+  string stream_id = 1;
+  string stream_name = 2;
+  uint32 partition_count = 3;
+  uint64 latest_offset = 4;
+  uint64 published_messages = 5;
+  uint64 published_bytes = 6;
+  optional string last_publish_at = 7;
+  uint32 subscription_count = 8;
+  uint32 healthy_subscription_count = 9;
+  uint64 total_lag_messages = 10;
+  uint64 max_lag_messages = 11;
+}
+
+message ListStreamSubscriptionsRequest {
+  optional string stream_id = 1;
+  optional string consumer_group = 2;
+}
+
+message CreateStreamSubscriptionRequest {
+  string stream_id = 1;
+  string consumer_group = 2;
+  optional string delivery_semantics = 3;
+  optional uint64 initial_offset = 4;
+  optional uint64 max_lag_messages = 5;
+  optional string owner_id = 6;
+}
+
+message StreamSubscriptionReply {
+  string id = 1;
+  string stream_id = 2;
+  string consumer_group = 3;
+  string delivery_semantics = 4;
+  uint64 acknowledged_offset = 5;
+  uint64 lag_messages = 6;
+  uint64 max_lag_messages = 7;
+  bool healthy = 8;
+  optional string last_acknowledged_at = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListStreamSubscriptionsReply {
+  repeated StreamSubscriptionReply items = 1;
+}
+
+message GetStreamSubscriptionRequest {
+  string subscription_id = 1;
+}
+
+message AcknowledgeStreamSubscriptionRequest {
+  string subscription_id = 1;
+  uint64 acknowledged_offset = 2;
+}
+
+message ListStreamOutboxRequest {}
+
+message StreamOutboxMessageReply {
+  string id = 1;
+  string topic = 2;
+  optional string idempotency_key = 3;
+  string payload_json = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  string state = 7;
+}
+
+message ListStreamOutboxReply {
+  repeated StreamOutboxMessageReply values = 1;
+}
+
+service StreamService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc GetStreamServiceSummary(GetStreamServiceSummaryRequest) returns (StreamServiceSummaryReply);
+  rpc ListStreams(ListManagedStreamsRequest) returns (ListManagedStreamsReply);
+  rpc CreateStream(CreateManagedStreamRequest) returns (ManagedStreamReply);
+  rpc GetStream(GetManagedStreamRequest) returns (ManagedStreamReply);
+  rpc ListStreamPartitions(ListStreamPartitionsRequest) returns (ListStreamPartitionsReply);
+  rpc PublishStream(PublishStreamRequest) returns (StreamPublishReply);
+  rpc GetStreamReplay(GetStreamReplayRequest) returns (StreamReplayPageReply);
+  rpc GetStreamLagSummary(GetStreamLagSummaryRequest) returns (StreamLagSummaryReply);
+  rpc ListSubscriptions(ListStreamSubscriptionsRequest) returns (ListStreamSubscriptionsReply);
+  rpc CreateSubscription(CreateStreamSubscriptionRequest) returns (StreamSubscriptionReply);
+  rpc GetSubscription(GetStreamSubscriptionRequest) returns (StreamSubscriptionReply);
+  rpc AcknowledgeSubscription(AcknowledgeStreamSubscriptionRequest) returns (StreamSubscriptionReply);
+  rpc ListOutbox(ListStreamOutboxRequest) returns (ListStreamOutboxReply);
+}
+
+message StorageVolumeScopeRequest {
+  string volume_id = 1;
+}
+
+message DescribeVolumeRestoreActionRequest {
+  string restore_action_id = 1;
+}
+
+message VolumeSnapshotPolicyReply {
+  string volume_id = 1;
+  string recovery_class = 2;
+  string state = 3;
+  string lifecycle = 4;
+  uint32 interval_minutes = 5;
+  uint32 retention_snapshots = 6;
+  uint32 recovery_point_objective_minutes = 7;
+  string next_snapshot_after = 8;
+}
+
+message VolumeRecoveryPointReply {
+  string volume_id = 1;
+  uint64 version = 2;
+  uint64 execution_count = 3;
+  string etag = 4;
+  string captured_at = 5;
+}
+
+message VolumeRecoveryHistoryEntry {
+  string volume_id = 1;
+  uint64 version = 2;
+  uint64 execution_count = 3;
+  string etag = 4;
+  string captured_at = 5;
+  bool current = 6;
+}
+
+message ListVolumeRecoveryHistoryReply {
+  repeated VolumeRecoveryHistoryEntry items = 1;
+}
+
+message CreateVolumeRestoreActionRequest {
+  string volume_id = 1;
+  optional uint64 recovery_point_version = 2;
+  string recovery_point_etag = 3;
+  string reason = 4;
+}
+
+message VolumeRestoreActionReply {
+  string id = 1;
+  string workflow_id = 2;
+  string volume_id = 3;
+  string state = 4;
+  string source_recovery_point_volume_id = 5;
+  uint64 source_recovery_point_version = 6;
+  uint64 source_recovery_point_execution_count = 7;
+  string source_recovery_point_etag = 8;
+  string source_recovery_point_captured_at = 9;
+  string recovery_class = 10;
+  string requested_reason = 11;
+  string requested_at = 12;
+  string started_at = 13;
+  string completed_at = 14;
+  string lifecycle = 15;
+}
+
+message ListVolumeRestoreActionsReply {
+  repeated VolumeRestoreActionReply items = 1;
+}
+
+message CreateDnsZoneRequest {
+  string domain = 1;
+}
+
+message VerifyDnsZoneRequest {
+  string zone_id = 1;
+}
+
+message DnsZoneReply {
+  string id = 1;
+  string domain = 2;
+  bool verified = 3;
+}
+
+message ListDnsZonesReply {
+  repeated DnsZoneReply items = 1;
+}
+
+message CreateDnsRecordRequest {
+  string zone_id = 1;
+  string name = 2;
+  string record_type = 3;
+  string value = 4;
+  uint32 ttl = 5;
+}
+
+message DnsRecordReply {
+  string id = 1;
+  string zone_id = 2;
+  string name = 3;
+  string record_type = 4;
+  string value = 5;
+  uint32 ttl = 6;
+}
+
+message ListDnsRecordsReply {
+  repeated DnsRecordReply items = 1;
+}
+
+enum DnsSteeringMode {
+  DNS_STEERING_MODE_UNSPECIFIED = 0;
+  DNS_STEERING_MODE_WEIGHTED = 1;
+  DNS_STEERING_MODE_PRIORITY = 2;
+  DNS_STEERING_MODE_GEO = 3;
+  DNS_STEERING_MODE_LATENCY = 4;
+}
+
+message DnsAliasHealthCheck {
+  string protocol = 1;
+  string path = 2;
+  uint32 port = 3;
+}
+
+message CreateDnsPublicationAnswerRequest {
+  string alias = 1;
+  uint32 weight = 2;
+  uint32 priority = 3;
+  string geo_scope = 4;
+  string latency_region = 5;
+  DnsAliasHealthCheck health_check = 6;
+}
+
+message DnsPublicationAnswerReply {
+  string alias = 1;
+  uint32 weight = 2;
+  uint32 priority = 3;
+  string geo_scope = 4;
+  string latency_region = 5;
+  DnsAliasHealthCheck health_check = 6;
+}
+
+message CreateDnsPublicationIntentRequest {
+  string zone_id = 1;
+  string hostname = 2;
+  DnsSteeringMode steering = 3;
+  repeated CreateDnsPublicationAnswerRequest answers = 4;
+}
+
+message DnsPublicationIntentReply {
+  string id = 1;
+  string zone_id = 2;
+  string hostname = 3;
+  DnsSteeringMode steering = 4;
+  repeated DnsPublicationAnswerReply answers = 5;
+}
+
+message ListDnsPublicationIntentsReply {
+  repeated DnsPublicationIntentReply items = 1;
+}
+
+message MarkDnsProviderTaskDeliveredRequest {
+  string task_id = 1;
+}
+
+message DnsProviderTaskReply {
+  string id = 1;
+  string provider = 2;
+  string action = 3;
+  string resource_id = 4;
+  string status = 5;
+  string last_error = 6;
+}
+
+message ListDnsProviderTasksReply {
+  repeated DnsProviderTaskReply items = 1;
+}
+
+service DnsService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListZones(HealthRequest) returns (ListDnsZonesReply);
+  rpc CreateZone(CreateDnsZoneRequest) returns (DnsZoneReply);
+  rpc VerifyZone(VerifyDnsZoneRequest) returns (DnsZoneReply);
+  rpc ListRecords(HealthRequest) returns (ListDnsRecordsReply);
+  rpc CreateRecord(CreateDnsRecordRequest) returns (DnsRecordReply);
+  rpc ListPublicationIntents(HealthRequest) returns (ListDnsPublicationIntentsReply);
+  rpc CreatePublicationIntent(CreateDnsPublicationIntentRequest) returns (DnsPublicationIntentReply);
+  rpc ListProviderTasks(HealthRequest) returns (ListDnsProviderTasksReply);
+  rpc MarkProviderTaskDelivered(MarkDnsProviderTaskDeliveredRequest) returns (DnsProviderTaskReply);
+}
+
+message NetsecPolicyVerifyRequest {
+  string source_identity = 1;
+  string destination = 2;
+  string protocol = 3;
+  uint32 port = 4;
+}
+
+message NetsecPolicyVerifyReply {
+  string verdict = 1;
+  string reason = 2;
+  string policy_id = 3;
+  string flow_audit_id = 4;
+}
+
+message ListNetsecServiceIdentitiesRequest {}
+
+message RegisterServiceIdentityRequest {
+  string subject = 1;
+  string mtls_cert_fingerprint = 2;
+  map<string, string> labels = 3;
+  repeated string allowed_private_networks = 4;
+  optional bool enabled = 5;
+}
+
+message RegisterServiceIdentityReply {
+  string id = 1;
+  string subject = 2;
+  bool enabled = 3;
+  string mtls_cert_fingerprint = 4;
+  map<string, string> labels = 5;
+  repeated string allowed_private_networks = 6;
+  ResourceMetadata metadata = 7;
+}
+
+message ListNetsecServiceIdentitiesReply {
+  repeated RegisterServiceIdentityReply items = 1;
+}
+
+message NetsecPrivateNetworkScopeRequest {
+  string private_network_id = 1;
+}
+
+message NetsecRouteTableScopeRequest {
+  string private_network_id = 1;
+  string route_table_id = 2;
+}
+
+message CreateNetsecSubnetRequest {
+  string private_network_id = 1;
+  string name = 2;
+  string cidr = 3;
+  string route_table_id = 4;
+}
+
+message NetsecSubnetReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+  string cidr = 4;
+  string route_table_id = 5;
+}
+
+message ListNetsecSubnetsReply {
+  repeated NetsecSubnetReply items = 1;
+}
+
+message CreateNetsecRouteTableRequest {
+  string private_network_id = 1;
+  string name = 2;
+}
+
+message NetsecRouteTableReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+}
+
+message ListNetsecRouteTablesReply {
+  repeated NetsecRouteTableReply items = 1;
+}
+
+message CreateNetsecNextHopRequest {
+  string private_network_id = 1;
+  string name = 2;
+  string kind = 3;
+  string target = 4;
+}
+
+message NetsecNextHopReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+  string kind = 4;
+  string target = 5;
+}
+
+message ListNetsecNextHopsReply {
+  repeated NetsecNextHopReply items = 1;
+}
+
+message CreateNetsecPrivateRouteRequest {
+  string private_network_id = 1;
+  string route_table_id = 2;
+  string destination = 3;
+  string next_hop_id = 4;
+}
+
+message NetsecPrivateRouteReply {
+  string id = 1;
+  string private_network_id = 2;
+  string route_table_id = 3;
+  string destination = 4;
+  string next_hop_id = 5;
+}
+
+message ListNetsecPrivateRoutesReply {
+  repeated NetsecPrivateRouteReply items = 1;
+}
+
+message CreateNetsecServiceConnectAttachmentRequest {
+  string private_network_id = 1;
+  string service_identity = 2;
+  string private_route_id = 3;
+}
+
+message NetsecServiceConnectAttachmentReply {
+  string id = 1;
+  string private_network_id = 2;
+  string private_route_id = 3;
+  string route_table_id = 4;
+  string service_identity_id = 5;
+  string service_identity_subject = 6;
+  string destination = 7;
+  ResourceMetadata metadata = 8;
+}
+
+message ListNetsecServiceConnectAttachmentsReply {
+  repeated NetsecServiceConnectAttachmentReply items = 1;
+}
+
+message CreateNetsecNatGatewayRequest {
+  string private_network_id = 1;
+  string name = 2;
+  optional string tenant_id = 3;
+  string cell = 4;
+  string public_ip = 5;
+  optional string subnet_id = 6;
+  repeated string route_table_ids = 7;
+}
+
+message NetsecNatGatewayReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+  string tenant_id = 4;
+  string cell = 5;
+  string public_ip = 6;
+  optional string subnet_id = 7;
+  repeated string route_table_ids = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListNetsecNatGatewaysReply {
+  repeated NetsecNatGatewayReply items = 1;
+}
+
+message CreateNetsecTransitAttachmentRequest {
+  string private_network_id = 1;
+  string name = 2;
+  optional string tenant_id = 3;
+  string cell = 4;
+  string transit_private_network_id = 5;
+  string transit_tenant_id = 6;
+  string transit_cell = 7;
+  repeated string route_table_ids = 8;
+}
+
+message NetsecTransitAttachmentReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+  string tenant_id = 4;
+  string cell = 5;
+  string transit_private_network_id = 6;
+  string transit_tenant_id = 7;
+  string transit_cell = 8;
+  repeated string route_table_ids = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListNetsecTransitAttachmentsReply {
+  repeated NetsecTransitAttachmentReply items = 1;
+}
+
+message CreateNetsecVpnConnectionRequest {
+  string private_network_id = 1;
+  string name = 2;
+  optional string tenant_id = 3;
+  string cell = 4;
+  string gateway_address = 5;
+  repeated string remote_cidrs = 6;
+  repeated string route_table_ids = 7;
+  string routing_mode = 8;
+}
+
+message NetsecVpnConnectionReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+  string tenant_id = 4;
+  string cell = 5;
+  string gateway_address = 6;
+  repeated string remote_cidrs = 7;
+  repeated string route_table_ids = 8;
+  string routing_mode = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListNetsecVpnConnectionsReply {
+  repeated NetsecVpnConnectionReply items = 1;
+}
+
+message CreateNetsecPeeringConnectionRequest {
+  string private_network_id = 1;
+  string name = 2;
+  optional string tenant_id = 3;
+  string cell = 4;
+  string peer_private_network_id = 5;
+  string peer_tenant_id = 6;
+  string peer_cell = 7;
+  repeated string route_table_ids = 8;
+}
+
+message NetsecPeeringConnectionReply {
+  string id = 1;
+  string private_network_id = 2;
+  string name = 3;
+  string tenant_id = 4;
+  string cell = 5;
+  string peer_private_network_id = 6;
+  string peer_tenant_id = 7;
+  string peer_cell = 8;
+  repeated string route_table_ids = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListNetsecPeeringConnectionsReply {
+  repeated NetsecPeeringConnectionReply items = 1;
+}
+
+message QueryFlowAuditRequest {
+  string verdict = 1;
+  string source_identity = 2;
+  string destination = 3;
+  string protocol = 4;
+  string policy_id = 5;
+  string inspection_profile_id = 6;
+  string since_rfc3339 = 7;
+  string until_rfc3339 = 8;
+  uint32 limit = 9;
+}
+
+message QueryFlowAuditReply {
+  repeated string flow_audit_ids = 1;
+}
+
+message SummarizeFlowAuditReply {
+  uint32 total = 1;
+  uint32 allow = 2;
+  uint32 deny = 3;
+}
+
+service NetsecService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc VerifyPolicy(NetsecPolicyVerifyRequest) returns (NetsecPolicyVerifyReply);
+  rpc ListServiceIdentities(ListNetsecServiceIdentitiesRequest) returns (ListNetsecServiceIdentitiesReply);
+  rpc RegisterServiceIdentity(RegisterServiceIdentityRequest) returns (RegisterServiceIdentityReply);
+  rpc ListSubnets(NetsecPrivateNetworkScopeRequest) returns (ListNetsecSubnetsReply);
+  rpc CreateSubnet(CreateNetsecSubnetRequest) returns (NetsecSubnetReply);
+  rpc ListRouteTables(NetsecPrivateNetworkScopeRequest) returns (ListNetsecRouteTablesReply);
+  rpc CreateRouteTable(CreateNetsecRouteTableRequest) returns (NetsecRouteTableReply);
+  rpc ListNextHops(NetsecPrivateNetworkScopeRequest) returns (ListNetsecNextHopsReply);
+  rpc CreateNextHop(CreateNetsecNextHopRequest) returns (NetsecNextHopReply);
+  rpc ListPrivateRoutes(NetsecRouteTableScopeRequest) returns (ListNetsecPrivateRoutesReply);
+  rpc CreatePrivateRoute(CreateNetsecPrivateRouteRequest) returns (NetsecPrivateRouteReply);
+  rpc ListServiceConnectAttachments(NetsecPrivateNetworkScopeRequest) returns (ListNetsecServiceConnectAttachmentsReply);
+  rpc CreateServiceConnectAttachment(CreateNetsecServiceConnectAttachmentRequest) returns (NetsecServiceConnectAttachmentReply);
+  rpc ListNatGateways(NetsecPrivateNetworkScopeRequest) returns (ListNetsecNatGatewaysReply);
+  rpc CreateNatGateway(CreateNetsecNatGatewayRequest) returns (NetsecNatGatewayReply);
+  rpc ListTransitAttachments(NetsecPrivateNetworkScopeRequest) returns (ListNetsecTransitAttachmentsReply);
+  rpc CreateTransitAttachment(CreateNetsecTransitAttachmentRequest) returns (NetsecTransitAttachmentReply);
+  rpc ListVpnConnections(NetsecPrivateNetworkScopeRequest) returns (ListNetsecVpnConnectionsReply);
+  rpc CreateVpnConnection(CreateNetsecVpnConnectionRequest) returns (NetsecVpnConnectionReply);
+  rpc ListPeeringConnections(NetsecPrivateNetworkScopeRequest) returns (ListNetsecPeeringConnectionsReply);
+  rpc CreatePeeringConnection(CreateNetsecPeeringConnectionRequest) returns (NetsecPeeringConnectionReply);
+  rpc QueryFlowAudit(QueryFlowAuditRequest) returns (QueryFlowAuditReply);
+  rpc SummarizeFlowAudit(QueryFlowAuditRequest) returns (SummarizeFlowAuditReply);
+}
+
+message CreateMailDomainRequest {
+  string domain = 1;
+  string zone_id = 2;
+}
+
+message CreateMailDomainReply {
+  string id = 1;
+  string domain = 2;
+  string dkim_selector = 3;
+}
+
+message CreateMailRelayRouteRequest {
+  string domain_id = 1;
+  string destination = 2;
+  string auth_mode = 3;
+}
+
+message CreateMailRelayRouteReply {
+  string id = 1;
+  string domain_id = 2;
+  string destination = 3;
+  bool enabled = 4;
+}
+
+message CreateMailMessageEventRequest {
+  string domain_id = 1;
+  string direction = 2;
+  string from = 3;
+  string to = 4;
+  string subject = 5;
+  uint32 max_attempts = 6;
+  uint32 deliver_after_seconds = 7;
+}
+
+message MailMessageEventReply {
+  string id = 1;
+  string state = 2;
+  uint32 attempts = 3;
+  uint32 max_attempts = 4;
+}
+
+message DispatchMailRequest {
+  uint32 limit = 1;
+}
+
+message DispatchMailReply {
+  uint32 inspected = 1;
+  uint32 delivered = 2;
+  uint32 failed = 3;
+  uint32 dead_lettered = 4;
+  uint32 skipped_not_due = 5;
+}
+
+message ReplayMailDeadLetterRequest {
+  string dead_letter_id = 1;
+  string reason = 2;
+}
+
+message ReplayMailDeadLetterReply {
+  string message_id = 1;
+  string state = 2;
+}
+
+message VerifyMailDomainAuthRequest {
+  string domain_id = 1;
+  bool reconcile_missing = 2;
+  uint32 ttl = 3;
+}
+
+message VerifyMailDomainAuthReply {
+  string domain_id = 1;
+  bool verified = 2;
+  uint32 reconciled_records = 3;
+  uint32 missing_records = 4;
+}
+
+service MailService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc CreateDomain(CreateMailDomainRequest) returns (CreateMailDomainReply);
+  rpc CreateRelayRoute(CreateMailRelayRouteRequest) returns (CreateMailRelayRouteReply);
+  rpc CreateMessageEvent(CreateMailMessageEventRequest) returns (MailMessageEventReply);
+  rpc DispatchMessages(DispatchMailRequest) returns (DispatchMailReply);
+  rpc ReplayDeadLetter(ReplayMailDeadLetterRequest) returns (ReplayMailDeadLetterReply);
+  rpc VerifyDomainAuth(VerifyMailDomainAuthRequest) returns (VerifyMailDomainAuthReply);
+}
+
+message RecordAbuseSignalRequest {
+  string subject_kind = 1;
+  string subject = 2;
+  string signal_kind = 3;
+  string severity = 4;
+  uint32 confidence_bps = 5;
+  string source_service = 6;
+  string reason = 7;
+  repeated string evidence_refs = 8;
+}
+
+message AbuseSignalReply {
+  string id = 1;
+  string subject_kind = 2;
+  string subject = 3;
+  string signal_kind = 4;
+  string severity = 5;
+}
+
+message CreateAbuseCaseRequest {
+  string subject_kind = 1;
+  string subject = 2;
+  string reason = 3;
+  string priority = 4;
+  repeated string signal_ids = 5;
+  repeated string evidence_refs = 6;
+}
+
+message AbuseCaseReply {
+  string id = 1;
+  string subject_kind = 2;
+  string subject = 3;
+  string status = 4;
+  string priority = 5;
+  string quarantine_id = 6;
+}
+
+message ReviewAbuseCaseRequest {
+  string case_id = 1;
+  string action = 2;
+  string reviewer = 3;
+  string note = 4;
+  string assign_to = 5;
+  bool escalate = 6;
+  bool deny_network = 7;
+  bool deny_mail_relay = 8;
+  uint32 expires_after_seconds = 9;
+}
+
+message CreateAbuseQuarantineRequest {
+  string subject_kind = 1;
+  string subject = 2;
+  string reason = 3;
+  string case_id = 4;
+  bool deny_network = 5;
+  bool deny_mail_relay = 6;
+  uint32 expires_after_seconds = 7;
+}
+
+message AbuseQuarantineReply {
+  string id = 1;
+  string subject_kind = 2;
+  string subject = 3;
+  string state = 4;
+  bool deny_network = 5;
+  bool deny_mail_relay = 6;
+}
+
+message ReleaseAbuseQuarantineRequest {
+  string quarantine_id = 1;
+  string reason = 2;
+}
+
+message CreateAbuseAppealRequest {
+  string case_id = 1;
+  string requested_by = 2;
+  string reason = 3;
+}
+
+message ReviewAbuseAppealRequest {
+  string appeal_id = 1;
+  string reviewer = 2;
+  string action = 3;
+  string note = 4;
+}
+
+message AbuseAppealReply {
+  string id = 1;
+  string case_id = 2;
+  string status = 3;
+}
+
+message CreateRemediationCaseRequest {
+  string tenant_subject = 1;
+  string reason = 2;
+  optional string owner = 3;
+  optional uint32 sla_target_seconds = 4;
+  repeated string rollback_evidence_refs = 5;
+  repeated string verification_evidence_refs = 6;
+  repeated string abuse_case_ids = 7;
+  repeated string quarantine_ids = 8;
+  repeated string change_request_ids = 9;
+  repeated string notify_message_ids = 10;
+}
+
+message RemediationWorkflowStepReply {
+  string name = 1;
+  uint32 index = 2;
+  string state = 3;
+  optional string detail = 4;
+  string updated_at = 5;
+}
+
+message RemediationCaseReply {
+  string id = 1;
+  string workflow_id = 2;
+  repeated RemediationWorkflowStepReply workflow_steps = 3;
+  string tenant_subject = 4;
+  optional string opened_by = 5;
+  optional string owner = 6;
+  optional string owner_assigned_at = 7;
+  repeated string abuse_case_ids = 8;
+  repeated string quarantine_ids = 9;
+  repeated string change_request_ids = 10;
+  repeated string notify_message_ids = 11;
+  repeated string rollback_evidence_refs = 12;
+  repeated string verification_evidence_refs = 13;
+  string evidence_state = 14;
+  uint32 sla_target_seconds = 15;
+  optional string sla_deadline_at = 16;
+  string sla_state = 17;
+  string escalation_state = 18;
+  uint32 escalation_count = 19;
+  optional string last_escalated_at = 20;
+  optional string last_escalated_by = 21;
+  optional string last_escalation_reason = 22;
+  string reason = 23;
+  string created_at = 24;
+  string updated_at = 25;
+  ResourceMetadata metadata = 26;
+}
+
+message ListRemediationCasesRequest {
+  optional string tenant_subject = 1;
+  optional string owner = 2;
+  optional string evidence_state = 3;
+  optional string sla_state = 4;
+  optional string escalation_state = 5;
+  optional string abuse_case_id = 6;
+  optional string quarantine_id = 7;
+  optional string change_request_id = 8;
+  optional string notify_message_id = 9;
+  optional uint32 limit = 10;
+}
+
+message ListRemediationCasesReply {
+  repeated RemediationCaseReply items = 1;
+}
+
+message GetRemediationCaseRequest {
+  string remediation_case_id = 1;
+}
+
+message EscalateRemediationCaseRequest {
+  string remediation_case_id = 1;
+  string reason = 2;
+  optional string owner = 3;
+  repeated string rollback_evidence_refs = 4;
+  repeated string verification_evidence_refs = 5;
+  repeated string change_request_ids = 6;
+  repeated string notify_message_ids = 7;
+}
+
+message CreateSupportCaseRequest {
+  string tenant_subject = 1;
+  string reason = 2;
+  optional string owner = 3;
+  optional string priority = 4;
+  repeated string remediation_case_ids = 5;
+  repeated string change_request_ids = 6;
+  repeated string notify_message_ids = 7;
+}
+
+message SupportCaseReply {
+  string id = 1;
+  string tenant_subject = 2;
+  optional string opened_by = 3;
+  optional string owner = 4;
+  optional string owner_assigned_at = 5;
+  string status = 6;
+  string priority = 7;
+  repeated string remediation_case_ids = 8;
+  repeated string change_request_ids = 9;
+  repeated string notify_message_ids = 10;
+  string reason = 11;
+  string created_at = 12;
+  string updated_at = 13;
+  ResourceMetadata metadata = 14;
+}
+
+message ListSupportCasesRequest {
+  optional string tenant_subject = 1;
+  optional string owner = 2;
+  optional string status = 3;
+  optional string priority = 4;
+  optional string remediation_case_id = 5;
+  optional string change_request_id = 6;
+  optional string notify_message_id = 7;
+  optional uint32 limit = 8;
+}
+
+message ListSupportCasesReply {
+  repeated SupportCaseReply items = 1;
+}
+
+message GetSupportCaseRequest {
+  string support_case_id = 1;
+}
+
+message TransitionSupportCaseRequest {
+  string support_case_id = 1;
+  string reason = 2;
+  optional string status = 3;
+  optional string owner = 4;
+}
+
+message EvaluateAbuseRiskRequest {
+  string subject_kind = 1;
+  string subject = 2;
+}
+
+message EvaluateAbuseRiskReply {
+  string subject_kind = 1;
+  string subject = 2;
+  int32 score = 3;
+  string state = 4;
+  uint64 signal_count = 5;
+  uint32 signals_in_last_24h = 6;
+  repeated string active_case_ids = 7;
+  string active_quarantine_id = 8;
+  string recommended_action = 9;
+}
+
+service AbuseService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc RecordSignal(RecordAbuseSignalRequest) returns (AbuseSignalReply);
+  rpc CreateCase(CreateAbuseCaseRequest) returns (AbuseCaseReply);
+  rpc ReviewCase(ReviewAbuseCaseRequest) returns (AbuseCaseReply);
+  rpc CreateQuarantine(CreateAbuseQuarantineRequest) returns (AbuseQuarantineReply);
+  rpc ReleaseQuarantine(ReleaseAbuseQuarantineRequest) returns (AbuseQuarantineReply);
+  rpc CreateAppeal(CreateAbuseAppealRequest) returns (AbuseAppealReply);
+  rpc ReviewAppeal(ReviewAbuseAppealRequest) returns (AbuseAppealReply);
+  rpc ListRemediationCases(ListRemediationCasesRequest) returns (ListRemediationCasesReply);
+  rpc CreateRemediationCase(CreateRemediationCaseRequest) returns (RemediationCaseReply);
+  rpc GetRemediationCase(GetRemediationCaseRequest) returns (RemediationCaseReply);
+  rpc EscalateRemediationCase(EscalateRemediationCaseRequest) returns (RemediationCaseReply);
+  rpc ListSupportCases(ListSupportCasesRequest) returns (ListSupportCasesReply);
+  rpc CreateSupportCase(CreateSupportCaseRequest) returns (SupportCaseReply);
+  rpc GetSupportCase(GetSupportCaseRequest) returns (SupportCaseReply);
+  rpc TransitionSupportCase(TransitionSupportCaseRequest) returns (SupportCaseReply);
+  rpc EvaluateRisk(EvaluateAbuseRiskRequest) returns (EvaluateAbuseRiskReply);
+}
+
+message EvaluatePolicyRequest {
+  string resource_kind = 1;
+  string action = 2;
+  map<string, string> selector = 3;
+}
+
+message PolicyRuleEvaluation {
+  string policy_id = 1;
+  string effect = 2;
+  map<string, string> matched_selector = 3;
+}
+
+message PolicyDecisionExplanation {
+  string evaluated_resource_kind = 1;
+  string evaluated_action = 2;
+  map<string, string> matched_inputs = 3;
+  repeated string matched_policy_ids = 4;
+  repeated string decisive_policy_ids = 5;
+  string rationale = 6;
+  repeated PolicyRuleEvaluation rule_evaluations = 7;
+  string actor = 8;
+  PrincipalIdentity principal = 9;
+}
+
+message EvaluatePolicyReply {
+  string decision = 1;
+  PolicyDecisionExplanation explanation = 2;
+}
+
+service PolicyService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc EvaluatePolicy(EvaluatePolicyRequest) returns (EvaluatePolicyReply);
+}
+
+message CreateLegalHoldRequest {
+  string subject_kind = 1;
+  string subject_id = 2;
+  string reason = 3;
+}
+
+message CreateLegalHoldReply {
+  string id = 1;
+  bool active = 2;
+}
+
+message GovernanceReviewChangeRequest {
+  string change_request_id = 1;
+  string approver = 2;
+  string comment = 3;
+}
+
+message GovernanceApplyChangeRequest {
+  string change_request_id = 1;
+  string executor = 2;
+  string note = 3;
+}
+
+message GovernanceChangeRequestReply {
+  string id = 1;
+  string state = 2;
+  uint32 required_approvals = 3;
+}
+
+message EvaluateRetentionRequest {
+  string subject_kind = 1;
+  string subject_id = 2;
+  string resource_kind = 3;
+  string residency_tag = 4;
+  uint32 age_days = 5;
+}
+
+message EvaluateRetentionReply {
+  bool can_delete = 1;
+  string reason = 2;
+  string matched_policy_id = 3;
+  uint32 required_retain_days = 4;
+  uint32 hard_delete_after_days = 5;
+}
+
+message AuditIntegrityReply {
+  bool valid = 1;
+  uint32 checkpoints_checked = 2;
+  string head_hash = 3;
+  string expected_head_hash = 4;
+  string error = 5;
+}
+
+service GovernanceService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc CreateLegalHold(CreateLegalHoldRequest) returns (CreateLegalHoldReply);
+  rpc ApproveChangeRequest(GovernanceReviewChangeRequest) returns (GovernanceChangeRequestReply);
+  rpc RejectChangeRequest(GovernanceReviewChangeRequest) returns (GovernanceChangeRequestReply);
+  rpc ApplyChangeRequest(GovernanceApplyChangeRequest) returns (GovernanceChangeRequestReply);
+  rpc EvaluateRetention(EvaluateRetentionRequest) returns (EvaluateRetentionReply);
+  rpc VerifyAuditIntegrity(HealthRequest) returns (AuditIntegrityReply);
+}
+
+message FailoverRequest {
+  string from_node_id = 1;
+  string to_node_id = 2;
+  string reason = 3;
+  uint64 max_replication_lag_seconds = 4;
+}
+
+message FailoverReply {
+  string id = 1;
+  string state = 2;
+  bool drill = 3;
+  string operation_kind = 4;
+}
+
+message FailoverPreflightRequest {
+  string from_node_id = 1;
+  string to_node_id = 2;
+  uint64 max_replication_lag_seconds = 3;
+}
+
+message FailoverPreflightReply {
+  bool allowed = 1;
+  bool degraded_mode = 2;
+  bool quorum_satisfied = 3;
+  uint64 observed_replication_lag_seconds = 4;
+  repeated string blockers = 5;
+}
+
+message RegionalQuorumRequest {
+  string region = 1;
+  string node_id = 2;
+  string role = 3;
+  uint64 term = 4;
+  uint32 vote_weight = 5;
+  bool healthy = 6;
+  uint64 replicated_log_index = 7;
+  uint64 applied_log_index = 8;
+  uint32 lease_seconds = 9;
+}
+
+message RegionalQuorumReply {
+  string region = 1;
+  string node_id = 2;
+  string role = 3;
+  uint64 term = 4;
+  uint32 vote_weight = 5;
+  bool healthy = 6;
+  uint64 lease_expires_unix_seconds = 7;
+}
+
+message QuorumSummaryReply {
+  uint64 configured_votes = 1;
+  uint64 healthy_votes = 2;
+  uint64 majority_threshold = 3;
+  bool quorum_satisfied = 4;
+  uint64 stale_member_count = 5;
+}
+
+service HaService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc PreflightFailover(FailoverPreflightRequest) returns (FailoverPreflightReply);
+  rpc Failover(FailoverRequest) returns (FailoverReply);
+  rpc Evacuate(FailoverRequest) returns (FailoverReply);
+  rpc UpdateRegionalQuorum(RegionalQuorumRequest) returns (RegionalQuorumReply);
+  rpc GetQuorumSummary(HealthRequest) returns (QuorumSummaryReply);
+}
+
+message ApplyMigrationRequest {
+  string scope = 1;
+  uint32 from_version = 2;
+  uint32 to_version = 3;
+  string name = 4;
+  string checksum = 5;
+  string change_request_id = 6;
+}
+
+message ApplyMigrationReply {
+  string id = 1;
+  string scope = 2;
+  uint32 to_version = 3;
+  string state = 4;
+}
+
+message SetLifecycleMaintenanceRequest {
+  string service = 1;
+  bool enabled = 2;
+  string reason = 3;
+  string change_request_id = 4;
+}
+
+message LifecycleMaintenanceReply {
+  string service = 1;
+  bool enabled = 2;
+  string reason = 3;
+}
+
+message LifecycleIntegrityReply {
+  bool valid = 1;
+  uint32 migration_count = 2;
+  uint32 duplicate_target_conflicts = 3;
+  uint32 ordering_violations = 4;
+  uint32 unreplayed_dead_letters = 5;
+}
+
+service LifecycleService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ApplyMigration(ApplyMigrationRequest) returns (ApplyMigrationReply);
+  rpc SetMaintenance(SetLifecycleMaintenanceRequest) returns (LifecycleMaintenanceReply);
+  rpc VerifyIntegrity(HealthRequest) returns (LifecycleIntegrityReply);
+  rpc RegisterPlugin(RegisterPluginRequest) returns (RegisterPluginReply);
+}
+
+message RegisterPluginRequest {
+  string plugin_id = 1;
+  string name = 2;
+  string version = 3;
+  uint32 min_api_version = 4;
+  uint32 max_api_version = 5;
+}
+
+message RegisterPluginReply {
+  string plugin_id = 1;
+  bool enabled = 2;
+}
+
+message CreateSloRequest {
+  string name = 1;
+  string sli_kind = 2;
+  uint32 target_success_per_million = 3;
+  uint32 window_minutes = 4;
+}
+
+message CreateSloReply {
+  string id = 1;
+  string name = 2;
+}
+
+message GetFleetOpsRollupsRequest {}
+
+message FleetOpsScopedIncidentRollupReply {
+  uint32 total_incidents = 1;
+  uint32 open_incidents = 2;
+  map<string, uint32> status_counts = 3;
+  map<string, uint32> severity_counts = 4;
+}
+
+message FleetOpsHaReadinessReply {
+  uint32 total_regions = 1;
+  uint32 ready_regions = 2;
+  uint32 degraded_regions = 3;
+  uint32 regions_missing_reconciliation = 4;
+  uint32 unreconciled_regions = 5;
+  uint32 total_cells = 6;
+  uint32 ready_cells = 7;
+  uint32 degraded_cells = 8;
+  uint32 critical_dependencies_down = 9;
+  uint32 critical_dependencies_degraded = 10;
+}
+
+message FleetOpsIncidentStateReply {
+  uint32 total_incidents = 1;
+  uint32 open_incidents = 2;
+  uint32 resolved_incidents = 3;
+  map<string, uint32> status_counts = 4;
+  map<string, uint32> severity_counts = 5;
+  uint32 attributed_region_incidents = 6;
+  uint32 attributed_cell_incidents = 7;
+  uint32 unattributed_incidents = 8;
+}
+
+message FleetOpsBacklogHealthReply {
+  uint32 attention_items = 1;
+  uint32 critical_items = 2;
+  uint32 ha_failovers_in_progress = 3;
+  uint32 ha_failovers_failed = 4;
+  uint32 ha_repair_workflows_active = 5;
+  uint32 ha_repair_workflows_failed = 6;
+  uint32 lifecycle_dead_letters_pending = 7;
+  uint32 lifecycle_repair_jobs_active = 8;
+  uint32 lifecycle_repair_jobs_failed = 9;
+  uint32 data_failovers_active = 10;
+  uint32 data_failovers_failed = 11;
+  uint32 data_migrations_active = 12;
+  uint32 data_migrations_failed = 13;
+}
+
+message RegionFleetOpsHaReadinessReply {
+  uint32 total_cells = 1;
+  uint32 ready_cells = 2;
+  uint32 degraded_cells = 3;
+  uint32 participant_count = 4;
+  bool reconciliation_available = 5;
+  bool fully_reconciled = 6;
+  optional uint64 healthy_votes = 7;
+  optional uint64 majority_threshold = 8;
+  uint64 uncommitted_entries = 9;
+  uint32 lagging_nodes = 10;
+  bool ready = 11;
+}
+
+message RegionFleetOpsBacklogHealthReply {
+  uint32 attention_items = 1;
+  uint32 critical_items = 2;
+  uint64 uncommitted_entries = 3;
+  uint32 lagging_nodes = 4;
+  uint32 data_migrations_active = 5;
+  uint32 data_migrations_failed = 6;
+  uint32 data_failovers_active = 7;
+  uint32 data_failovers_failed = 8;
+}
+
+message RegionFleetOpsRollupReply {
+  string region_id = 1;
+  string region_name = 2;
+  RegionFleetOpsHaReadinessReply ha_readiness = 3;
+  FleetOpsScopedIncidentRollupReply incident_state = 4;
+  RegionFleetOpsBacklogHealthReply backlog_health = 5;
+}
+
+message CellFleetOpsHaReadinessReply {
+  uint32 participant_count = 1;
+  uint32 serving_participants = 2;
+  uint32 draining_participants = 3;
+  uint32 degraded_participants = 4;
+  uint32 stale_participants = 5;
+  uint32 expired_participants = 6;
+  bool ready = 7;
+}
+
+message CellFleetOpsBacklogHealthReply {
+  uint32 attention_items = 1;
+  uint32 critical_items = 2;
+  uint32 stale_participants = 3;
+  uint32 expired_participants = 4;
+  uint32 takeover_pending = 5;
+  uint32 takeover_acknowledged = 6;
+}
+
+message CellFleetOpsRollupReply {
+  string cell_id = 1;
+  string cell_name = 2;
+  string region_id = 3;
+  string region_name = 4;
+  CellFleetOpsHaReadinessReply ha_readiness = 5;
+  FleetOpsScopedIncidentRollupReply incident_state = 6;
+  CellFleetOpsBacklogHealthReply backlog_health = 7;
+}
+
+message FleetOpsRollupsReply {
+  string state_root = 1;
+  string generated_at = 2;
+  FleetOpsHaReadinessReply ha_readiness = 3;
+  FleetOpsIncidentStateReply incident_state = 4;
+  FleetOpsBacklogHealthReply backlog_health = 5;
+  repeated RegionFleetOpsRollupReply regions = 6;
+  repeated CellFleetOpsRollupReply cells = 7;
+}
+
+service ObserveService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc GetFleetOpsRollups(GetFleetOpsRollupsRequest) returns (FleetOpsRollupsReply);
+  rpc CreateSlo(CreateSloRequest) returns (CreateSloReply);
+}
+
+enum SecretRevealGrantKind {
+  SECRET_REVEAL_GRANT_KIND_UNSPECIFIED = 0;
+  SECRET_REVEAL_GRANT_KIND_APPROVAL = 1;
+  SECRET_REVEAL_GRANT_KIND_LEASE = 2;
+}
+
+message SecretRevealGrantReply {
+  string id = 1;
+  string secret_id = 2;
+  SecretRevealGrantKind grant_kind = 3;
+  string reason = 4;
+  string granted_by = 5;
+  string granted_by_kind = 6;
+  string granted_at = 7;
+  optional string expires_at = 8;
+  uint32 reveal_count = 9;
+  optional string last_revealed_at = 10;
+  optional string last_revealed_by = 11;
+  optional string last_revealed_by_kind = 12;
+  ResourceMetadata metadata = 13;
+}
+
+message ApproveSecretRevealRequest {
+  string secret_id = 1;
+  string reason = 2;
+}
+
+message IssueSecretRevealLeaseRequest {
+  string secret_id = 1;
+  string reason = 2;
+  uint32 lease_seconds = 3;
+}
+
+message RevealSecretWithGrantRequest {
+  string secret_id = 1;
+  string grant_id = 2;
+}
+
+message SecretRevealReply {
+  string id = 1;
+  string name = 2;
+  uint32 version = 3;
+  string value = 4;
+}
+
+service SecretsService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ApproveSecretReveal(ApproveSecretRevealRequest) returns (SecretRevealGrantReply);
+  rpc IssueSecretRevealLease(IssueSecretRevealLeaseRequest) returns (SecretRevealGrantReply);
+  rpc RevealSecretWithGrant(RevealSecretWithGrantRequest) returns (SecretRevealReply);
+}
+
+enum BudgetPeriod {
+  BUDGET_PERIOD_UNSPECIFIED = 0;
+  BUDGET_PERIOD_MONTHLY = 1;
+  BUDGET_PERIOD_QUARTERLY = 2;
+  BUDGET_PERIOD_ANNUAL = 3;
+  BUDGET_PERIOD_CUSTOM = 4;
+}
+
+enum SpendCapBehavior {
+  SPEND_CAP_BEHAVIOR_UNSPECIFIED = 0;
+  SPEND_CAP_BEHAVIOR_SOFT = 1;
+  SPEND_CAP_BEHAVIOR_HARD = 2;
+}
+
+enum BudgetNotificationKind {
+  BUDGET_NOTIFICATION_KIND_UNSPECIFIED = 0;
+  BUDGET_NOTIFICATION_KIND_THRESHOLD_REACHED = 1;
+  BUDGET_NOTIFICATION_KIND_SOFT_CAP_EXCEEDED = 2;
+  BUDGET_NOTIFICATION_KIND_HARD_CAP_BLOCKED = 3;
+}
+
+enum SupportTier {
+  SUPPORT_TIER_UNSPECIFIED = 0;
+  SUPPORT_TIER_STANDARD = 1;
+  SUPPORT_TIER_BUSINESS = 2;
+  SUPPORT_TIER_ENTERPRISE = 3;
+  SUPPORT_TIER_CUSTOM = 4;
+}
+
+enum SupportEntitlementSourceKind {
+  SUPPORT_ENTITLEMENT_SOURCE_KIND_UNSPECIFIED = 0;
+  SUPPORT_ENTITLEMENT_SOURCE_KIND_BILLING_ACCOUNT = 1;
+  SUPPORT_ENTITLEMENT_SOURCE_KIND_SUBSCRIPTION = 2;
+}
+
+message GetBillingSummaryRequest {}
+
+message ListBillingSupportEntitlementsRequest {}
+
+message SupportEntitlementReply {
+  string id = 1;
+  string billing_account_id = 2;
+  optional string subscription_id = 3;
+  SupportEntitlementSourceKind source_kind = 4;
+  string source_plan = 5;
+  SupportTier support_tier = 6;
+  repeated string channels = 7;
+  uint32 initial_response_sla_minutes = 8;
+  bool active = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListBillingSupportEntitlementsReply {
+  repeated SupportEntitlementReply items = 1;
+}
+
+message ListBillingBudgetsRequest {}
+
+message CreateBillingBudgetRequest {
+  string billing_account_id = 1;
+  string name = 2;
+  BudgetPeriod period = 3;
+  int64 amount_cents = 4;
+  repeated uint32 threshold_percentages = 5;
+  SpendCapBehavior cap_behavior = 6;
+}
+
+message BudgetReply {
+  string id = 1;
+  string billing_account_id = 2;
+  string name = 3;
+  BudgetPeriod period = 4;
+  int64 amount_cents = 5;
+  repeated uint32 threshold_percentages = 6;
+  SpendCapBehavior cap_behavior = 7;
+  bool active = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListBillingBudgetsReply {
+  repeated BudgetReply items = 1;
+}
+
+message ListBudgetBurnRecordsRequest {}
+
+message BudgetBurnReply {
+  string id = 1;
+  string budget_id = 2;
+  string billing_account_id = 3;
+  string source_kind = 4;
+  string source_id = 5;
+  int64 amount_cents = 6;
+  int64 resulting_burn_cents = 7;
+  string recorded_at = 8;
+}
+
+message ListBudgetBurnRecordsReply {
+  repeated BudgetBurnReply items = 1;
+}
+
+message ListBudgetNotificationsRequest {}
+
+message BudgetNotificationReply {
+  string id = 1;
+  string budget_id = 2;
+  string billing_account_id = 3;
+  BudgetNotificationKind kind = 4;
+  optional uint32 threshold_percentage = 5;
+  int64 invoice_total_cents = 6;
+  int64 projected_burn_cents = 7;
+  int64 budget_amount_cents = 8;
+  SpendCapBehavior cap_behavior = 9;
+  string message = 10;
+  string created_at = 11;
+}
+
+message ListBudgetNotificationsReply {
+  repeated BudgetNotificationReply items = 1;
+}
+
+message GetBillingOwnerSummariesRequest {}
+
+message BillingOwnerSummaryReply {
+  string owner_id = 1;
+  uint32 account_count = 2;
+  uint32 subscription_count = 3;
+  uint32 invoice_count = 4;
+  int64 unsettled_invoice_total_cents = 5;
+  uint32 budget_count = 6;
+  int64 budgeted_amount_cents = 7;
+  int64 tracked_burn_cents = 8;
+  uint32 budget_notification_count = 9;
+  uint32 budgets_at_or_over_cap = 10;
+  uint32 support_entitlement_count = 11;
+}
+
+message BillingOwnerSummariesReply {
+  repeated BillingOwnerSummaryReply owners = 1;
+}
+
+message BillingSummaryReply {
+  uint32 account_count = 1;
+  uint32 unique_owner_count = 2;
+  uint32 account_owner_link_count = 3;
+  map<string, uint32> owner_account_totals = 4;
+  uint32 subscription_count = 5;
+  uint32 active_subscription_count = 6;
+  uint32 subscriptions_linked_to_active_accounts = 7;
+  uint32 invoice_count = 8;
+  uint32 settled_invoice_count = 9;
+  uint32 unsettled_invoice_count = 10;
+  int64 settled_invoice_total_cents = 11;
+  int64 unsettled_invoice_total_cents = 12;
+  uint32 invoices_linked_to_active_accounts = 13;
+  map<string, uint32> invoice_status_totals = 14;
+  uint32 provider_sync_task_count = 15;
+  map<string, uint32> provider_sync_status_totals = 16;
+  uint32 budget_count = 17;
+  uint32 active_budget_count = 18;
+  int64 budgeted_amount_cents = 19;
+  int64 tracked_burn_cents = 20;
+  uint32 budget_burn_record_count = 21;
+  uint32 budget_notification_count = 22;
+  map<string, uint32> budget_notification_kind_totals = 23;
+  uint32 soft_cap_budget_count = 24;
+  uint32 hard_cap_budget_count = 25;
+  uint32 budgets_at_or_over_cap = 26;
+  uint32 support_entitlement_count = 27;
+  uint32 active_support_entitlement_count = 28;
+  uint32 support_entitlements_linked_to_active_accounts = 29;
+  uint32 support_entitlements_linked_to_active_subscriptions = 30;
+  map<string, uint32> support_entitlement_source_totals = 31;
+  map<string, uint32> support_tier_totals = 32;
+}
+
+message ListBillingProviderSyncTasksRequest {}
+
+message ProviderSyncTaskReply {
+  string id = 1;
+  string provider = 2;
+  string action = 3;
+  string resource_id = 4;
+  string payload_json = 5;
+  string status = 6;
+  optional string last_error = 7;
+  string created_at = 8;
+  string updated_at = 9;
+}
+
+message ListBillingProviderSyncTasksReply {
+  repeated ProviderSyncTaskReply items = 1;
+}
+
+message MarkBillingProviderSyncDeliveredRequest {
+  string sync_id = 1;
+}
+
+service BillingService {
+  rpc GetBillingSummary(GetBillingSummaryRequest) returns (BillingSummaryReply);
+  rpc ListSupportEntitlements(ListBillingSupportEntitlementsRequest) returns (ListBillingSupportEntitlementsReply);
+  rpc ListBudgets(ListBillingBudgetsRequest) returns (ListBillingBudgetsReply);
+  rpc CreateBudget(CreateBillingBudgetRequest) returns (BudgetReply);
+  rpc ListBudgetBurnRecords(ListBudgetBurnRecordsRequest) returns (ListBudgetBurnRecordsReply);
+  rpc ListBudgetNotifications(ListBudgetNotificationsRequest) returns (ListBudgetNotificationsReply);
+  rpc GetBillingOwnerSummaries(GetBillingOwnerSummariesRequest) returns (BillingOwnerSummariesReply);
+  rpc ListProviderSyncTasks(ListBillingProviderSyncTasksRequest) returns (ListBillingProviderSyncTasksReply);
+  rpc MarkProviderSyncDelivered(MarkBillingProviderSyncDeliveredRequest) returns (ProviderSyncTaskReply);
+}
+
+message CreateNotifyWebhookEndpointRequest {
+  string name = 1;
+  string url = 2;
+  string signing_secret = 3;
+  bool enabled = 4;
+  uint32 max_attempts = 5;
+  uint32 timeout_ms = 6;
+  uint32 backoff_base_seconds = 7;
+}
+
+message NotifyWebhookEndpointReply {
+  string id = 1;
+  bool enabled = 2;
+  uint32 max_attempts = 3;
+  string name = 4;
+  string url = 5;
+  uint32 timeout_ms = 6;
+  uint32 backoff_base_seconds = 7;
+  optional string last_error = 8;
+  string updated_at = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message ListNotifyWebhookEndpointsRequest {}
+
+message ListNotifyWebhookEndpointsReply {
+  repeated NotifyWebhookEndpointReply items = 1;
+}
+
+message RotateNotifyWebhookSecretRequest {
+  string webhook_endpoint_id = 1;
+  string signing_secret = 2;
+}
+
+message CreateNotificationTemplateRequest {
+  string name = 1;
+  string channel = 2;
+  string locale = 3;
+  string subject_template = 4;
+  string body_template = 5;
+  bool enabled = 6;
+}
+
+message NotificationTemplateReply {
+  string id = 1;
+  string channel = 2;
+  string locale = 3;
+  uint32 version = 4;
+  string name = 5;
+  string subject_template = 6;
+  string body_template = 7;
+  bool enabled = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message ListNotificationTemplatesRequest {}
+
+message ListNotificationTemplatesReply {
+  repeated NotificationTemplateReply items = 1;
+}
+
+message UpsertNotificationPreferenceRequest {
+  string subject_key = 1;
+  string channel = 2;
+  bool enabled = 3;
+  string digest_mode = 4;
+  string locale = 5;
+}
+
+message NotificationPreferenceReply {
+  string id = 1;
+  bool enabled = 2;
+  string digest_mode = 3;
+  string subject_key = 4;
+  string channel = 5;
+  string locale = 6;
+  string updated_at = 7;
+  ResourceMetadata metadata = 8;
+}
+
+message ListNotificationPreferencesRequest {}
+
+message ListNotificationPreferencesReply {
+  repeated NotificationPreferenceReply items = 1;
+}
+
+message CreateNotifyAlertRouteRequest {
+  string name = 1;
+  string min_severity = 2;
+  string channel = 3;
+  string destination = 4;
+  optional string subject_key = 5;
+  optional string webhook_endpoint_id = 6;
+  optional uint32 cooldown_seconds = 7;
+  optional bool enabled = 8;
+}
+
+message NotifyAlertRouteReply {
+  string id = 1;
+  string name = 2;
+  string min_severity = 3;
+  string channel = 4;
+  string destination = 5;
+  optional string subject_key = 6;
+  optional string webhook_endpoint_id = 7;
+  uint32 cooldown_seconds = 8;
+  bool enabled = 9;
+  optional string last_triggered_at = 10;
+  optional string last_dedupe_key = 11;
+  ResourceMetadata metadata = 12;
+}
+
+message ListNotifyAlertRoutesRequest {}
+
+message ListNotifyAlertRoutesReply {
+  repeated NotifyAlertRouteReply items = 1;
+}
+
+message TriggerNotifyAlertRequest {
+  string severity = 1;
+  string title = 2;
+  string body = 3;
+  optional string subject_key = 4;
+  optional string case_reference = 5;
+  optional string dedupe_key = 6;
+  map<string, string> labels = 7;
+}
+
+message TriggerNotifyAlertReply {
+  string severity = 1;
+  uint32 routed = 2;
+  uint32 suppressed_by_cooldown = 3;
+  repeated string route_ids = 4;
+  repeated string notification_ids = 5;
+}
+
+message CreateNotificationRequest {
+  string channel = 1;
+  string destination = 2;
+  string subject = 3;
+  string body = 4;
+  optional string template_id = 5;
+  map<string, string> template_vars = 6;
+  optional string subject_key = 7;
+  optional string locale = 8;
+  optional string webhook_endpoint_id = 9;
+  optional uint32 max_attempts = 10;
+  optional uint32 deliver_after_seconds = 11;
+  optional string case_reference = 12;
+}
+
+message ListNotificationsRequest {}
+
+message NotificationHistoryEntryReply {
+  uint32 sequence = 1;
+  string event = 2;
+  string occurred_at = 3;
+  string actor = 4;
+  string state = 5;
+  uint32 attempts = 6;
+  optional string detail = 7;
+  optional string case_reference = 8;
+  optional string related_notification_id = 9;
+}
+
+message NotificationReply {
+  string id = 1;
+  string state = 2;
+  uint32 attempts = 3;
+  string signature = 4;
+  string channel = 5;
+  string destination = 6;
+  string subject = 7;
+  string body = 8;
+  optional string template_id = 9;
+  optional string subject_key = 10;
+  string locale = 11;
+  optional string webhook_endpoint_id = 12;
+  uint32 max_attempts = 13;
+  optional string next_attempt_at = 14;
+  optional string last_error = 15;
+  optional string acknowledged_at = 16;
+  optional string acknowledged_by = 17;
+  optional string acknowledgement_note = 18;
+  optional string snoozed_until = 19;
+  optional string snoozed_by = 20;
+  optional string snooze_reason = 21;
+  uint32 escalation_count = 22;
+  optional string last_escalated_at = 23;
+  optional string last_escalated_by = 24;
+  optional string last_escalated_notification_id = 25;
+  string created_at = 26;
+  string updated_at = 27;
+  repeated NotificationHistoryEntryReply history = 28;
+  ResourceMetadata metadata = 29;
+  optional string case_reference = 30;
+}
+
+message ListNotificationsReply {
+  repeated NotificationReply items = 1;
+}
+
+message DispatchNotificationsRequest {
+  uint32 limit = 1;
+}
+
+message DispatchNotificationsReply {
+  uint32 inspected = 1;
+  uint32 delivered = 2;
+  uint32 failed = 3;
+  uint32 suppressed = 4;
+  uint32 dead_lettered = 5;
+  uint32 skipped_not_due = 6;
+}
+
+message ReplayNotificationDeadLetterRequest {
+  string dead_letter_id = 1;
+  string reason = 2;
+}
+
+message NotificationDeadLetterReply {
+  string id = 1;
+  string notification_id = 2;
+  string channel = 3;
+  string destination = 4;
+  uint32 attempts = 5;
+  string last_error = 6;
+  string captured_at = 7;
+  uint32 replay_count = 8;
+  optional string last_replayed_at = 9;
+  optional string last_replay_reason = 10;
+  ResourceMetadata metadata = 11;
+}
+
+message ListNotificationDeadLettersRequest {}
+
+message ListNotificationDeadLettersReply {
+  repeated NotificationDeadLetterReply items = 1;
+}
+
+message GetNotifySummaryRequest {}
+
+message NotifySummaryCounterReply {
+  string key = 1;
+  uint32 count = 2;
+}
+
+message NotifyEndpointSummaryReply {
+  uint32 total = 1;
+  uint32 enabled = 2;
+  uint32 disabled = 3;
+}
+
+message NotifyTemplateSummaryReply {
+  uint32 total = 1;
+  uint32 enabled = 2;
+  uint32 disabled = 3;
+  repeated NotifySummaryCounterReply by_channel = 4;
+}
+
+message NotifyPreferenceSummaryReply {
+  uint32 total = 1;
+  uint32 enabled = 2;
+  uint32 disabled = 3;
+  uint32 muted = 4;
+}
+
+message NotifyAlertRouteSummaryReply {
+  uint32 total = 1;
+  uint32 enabled = 2;
+  uint32 disabled = 3;
+  repeated NotifySummaryCounterReply by_channel = 4;
+}
+
+message NotifyNotificationSummaryReply {
+  uint32 total = 1;
+  uint32 pending = 2;
+  uint32 sent = 3;
+  uint32 failed = 4;
+  uint32 suppressed = 5;
+  uint32 dead_lettered = 6;
+  repeated NotifySummaryCounterReply by_state = 7;
+  repeated NotifySummaryCounterReply by_channel = 8;
+}
+
+message NotifyDeadLetterSummaryReply {
+  uint32 total = 1;
+}
+
+message NotifySummaryReply {
+  NotifyEndpointSummaryReply webhook_endpoints = 1;
+  NotifyTemplateSummaryReply templates = 2;
+  NotifyPreferenceSummaryReply preferences = 3;
+  NotifyAlertRouteSummaryReply alert_routes = 4;
+  NotifyNotificationSummaryReply notifications = 5;
+  NotifyDeadLetterSummaryReply dead_letters = 6;
+}
+
+message GetNotificationHistoryRequest {
+  string notification_id = 1;
+}
+
+message NotificationHistoryReply {
+  string notification_id = 1;
+  optional string case_reference = 2;
+  optional string acknowledged_at = 3;
+  optional string acknowledged_by = 4;
+  optional string snoozed_until = 5;
+  uint32 escalation_count = 6;
+  optional string last_escalated_notification_id = 7;
+  repeated NotificationHistoryEntryReply history = 8;
+}
+
+message DeliverNotificationRequest {
+  string notification_id = 1;
+}
+
+message AcknowledgeNotificationRequest {
+  string notification_id = 1;
+  optional string note = 2;
+  optional string case_reference = 3;
+}
+
+message SnoozeNotificationRequest {
+  string notification_id = 1;
+  optional uint32 snooze_seconds = 2;
+  optional string reason = 3;
+  optional string case_reference = 4;
+}
+
+message EscalateNotificationRequest {
+  string notification_id = 1;
+  string channel = 2;
+  string destination = 3;
+  optional string subject = 4;
+  optional string body = 5;
+  optional string subject_key = 6;
+  optional string case_reference = 7;
+  optional string locale = 8;
+  optional string webhook_endpoint_id = 9;
+  optional uint32 max_attempts = 10;
+  optional uint32 deliver_after_seconds = 11;
+  optional string reason = 12;
+}
+
+message RetryNotificationRequest {
+  string notification_id = 1;
+}
+
+message ListNotifyOutboxRequest {}
+
+message NotifyOutboxMessageReply {
+  string id = 1;
+  string topic = 2;
+  optional string idempotency_key = 3;
+  string payload_json = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  string state = 7;
+}
+
+message ListNotifyOutboxReply {
+  repeated NotifyOutboxMessageReply values = 1;
+}
+
+service NotifyService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListWebhookEndpoints(ListNotifyWebhookEndpointsRequest) returns (ListNotifyWebhookEndpointsReply);
+  rpc CreateWebhookEndpoint(CreateNotifyWebhookEndpointRequest) returns (NotifyWebhookEndpointReply);
+  rpc RotateWebhookSecret(RotateNotifyWebhookSecretRequest) returns (NotifyWebhookEndpointReply);
+  rpc ListTemplates(ListNotificationTemplatesRequest) returns (ListNotificationTemplatesReply);
+  rpc CreateTemplate(CreateNotificationTemplateRequest) returns (NotificationTemplateReply);
+  rpc ListPreferences(ListNotificationPreferencesRequest) returns (ListNotificationPreferencesReply);
+  rpc UpsertPreference(UpsertNotificationPreferenceRequest) returns (NotificationPreferenceReply);
+  rpc ListAlertRoutes(ListNotifyAlertRoutesRequest) returns (ListNotifyAlertRoutesReply);
+  rpc CreateAlertRoute(CreateNotifyAlertRouteRequest) returns (NotifyAlertRouteReply);
+  rpc TriggerAlert(TriggerNotifyAlertRequest) returns (TriggerNotifyAlertReply);
+  rpc GetNotifySummary(GetNotifySummaryRequest) returns (NotifySummaryReply);
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsReply);
+  rpc CreateNotification(CreateNotificationRequest) returns (NotificationReply);
+  rpc GetNotificationHistory(GetNotificationHistoryRequest) returns (NotificationHistoryReply);
+  rpc DeliverNotification(DeliverNotificationRequest) returns (NotificationReply);
+  rpc AcknowledgeNotification(AcknowledgeNotificationRequest) returns (NotificationReply);
+  rpc SnoozeNotification(SnoozeNotificationRequest) returns (NotificationReply);
+  rpc EscalateNotification(EscalateNotificationRequest) returns (NotificationReply);
+  rpc RetryNotification(RetryNotificationRequest) returns (NotificationReply);
+  rpc DispatchNotifications(DispatchNotificationsRequest) returns (DispatchNotificationsReply);
+  rpc ListDeadLetters(ListNotificationDeadLettersRequest) returns (ListNotificationDeadLettersReply);
+  rpc ReplayDeadLetter(ReplayNotificationDeadLetterRequest) returns (NotificationReply);
+  rpc ListOutbox(ListNotifyOutboxRequest) returns (ListNotifyOutboxReply);
+}
+
+enum UvmClaimTier {
+  UVM_CLAIM_TIER_UNSPECIFIED = 0;
+  UVM_CLAIM_TIER_COMPATIBLE = 1;
+  UVM_CLAIM_TIER_COMPETITIVE = 2;
+  UVM_CLAIM_TIER_FASTER_BOOT_PATH = 3;
+  UVM_CLAIM_TIER_FASTER_DENSITY = 4;
+  UVM_CLAIM_TIER_FASTER_THAN_KVM_FOR_WORKLOAD_CLASS = 5;
+  UVM_CLAIM_TIER_RESEARCH_ONLY = 6;
+}
+
+enum UvmRestorePolicyTier {
+  UVM_RESTORE_POLICY_TIER_UNSPECIFIED = 0;
+  UVM_RESTORE_POLICY_TIER_LATEST_CHECKPOINT = 1;
+}
+
+enum UvmMigrationPolicyTier {
+  UVM_MIGRATION_POLICY_TIER_UNSPECIFIED = 0;
+  UVM_MIGRATION_POLICY_TIER_STOP_AND_COPY = 1;
+  UVM_MIGRATION_POLICY_TIER_LIVE_OPTIONAL = 2;
+  UVM_MIGRATION_POLICY_TIER_LIVE_REQUIRED = 3;
+}
+
+message CreateUvmTemplateRequest {
+  string name = 1;
+  string architecture = 2;
+  uint32 vcpu = 3;
+  uint64 memory_mb = 4;
+  string cpu_topology = 5;
+  string numa_policy = 6;
+  string firmware_profile = 7;
+  string device_profile = 8;
+  string migration_policy = 9;
+  bool apple_guest_allowed = 10;
+  string boot_device = 11;
+  UvmExecutionIntent execution_intent = 12;
+}
+
+message UvmTemplateReply {
+  string id = 1;
+  string name = 2;
+  string architecture = 3;
+  uint32 vcpu = 4;
+  uint64 memory_mb = 5;
+  string machine_family = 6;
+  string guest_profile = 7;
+  string claim_tier = 8;
+  UvmExecutionIntent execution_intent = 9;
+  UvmClaimTier claim_tier_policy = 10;
+  UvmRestorePolicyTier restore_policy_tier = 11;
+  UvmMigrationPolicyTier migration_policy_tier = 12;
+  string boot_device = 13;
+  string cpu_topology = 14;
+  string numa_policy = 15;
+  string firmware_profile = 16;
+  string device_profile = 17;
+  string migration_policy = 18;
+  bool apple_guest_allowed = 19;
+  ResourceMetadata metadata = 20;
+}
+
+message GetUvmTemplateRequest {
+  string template_id = 1;
+}
+
+message UvmTemplateListRequest {}
+
+message UvmTemplateListReply {
+  repeated UvmTemplateReply values = 1;
+}
+
+message CreateUvmInstanceRequest {
+  string project_id = 1;
+  string name = 2;
+  string template_id = 3;
+  string boot_image_id = 4;
+  string architecture = 5;
+  string guest_os = 6;
+  uint32 vcpu = 7;
+  uint64 memory_mb = 8;
+  string cpu_topology = 9;
+  string numa_policy = 10;
+  string firmware_profile = 11;
+  string device_profile = 12;
+  string migration_policy = 13;
+  bool apple_guest_approved = 14;
+  string host_node_id = 15;
+  string install_media_image_id = 16;
+  string boot_device = 17;
+}
+
+message UvmInstanceReply {
+  string id = 1;
+  string state = 2;
+  string architecture = 3;
+  string guest_os = 4;
+  string machine_family = 5;
+  string guest_profile = 6;
+  string claim_tier = 7;
+  UvmExecutionIntent execution_intent = 8;
+  UvmClaimTier claim_tier_policy = 9;
+  UvmRestorePolicyTier restore_policy_tier = 10;
+  UvmMigrationPolicyTier migration_policy_tier = 11;
+  string boot_device = 12;
+  optional string install_media_image_id = 13;
+  string project_id = 14;
+  string name = 15;
+  optional string template_id = 16;
+  string boot_image_id = 17;
+  uint32 vcpu = 18;
+  uint64 memory_mb = 19;
+  string cpu_topology = 20;
+  string numa_policy = 21;
+  string firmware_profile = 22;
+  string device_profile = 23;
+  string migration_policy = 24;
+  bool apple_guest_approved = 25;
+  optional string host_node_id = 26;
+  string last_transition_at = 27;
+  ResourceMetadata metadata = 28;
+}
+
+message GetUvmInstanceRequest {
+  string instance_id = 1;
+}
+
+message UvmInstanceListRequest {}
+
+message UvmInstanceListReply {
+  repeated UvmInstanceReply values = 1;
+}
+
+message UvmLifecycleRequest {
+  string instance_id = 1;
+}
+
+message UvmMigrateRequest {
+  string instance_id = 1;
+  string to_node_id = 2;
+  string reason = 3;
+  optional string target_capability_id = 4;
+  optional string checkpoint_reference = 5;
+  optional string checkpoint_kind = 6;
+  optional uint32 migration_max_downtime_ms = 7;
+  UvmPortabilityAssessment portability_assessment = 8;
+}
+
+message UvmMigrationReply {
+  string id = 1;
+  string instance_id = 2;
+  string state = 3;
+  optional string from_node_id = 4;
+  string to_node_id = 5;
+  string reason = 6;
+  string started_at = 7;
+  optional string completed_at = 8;
+  ResourceMetadata metadata = 9;
+  optional string target_capability_id = 10;
+  string checkpoint_reference = 11;
+  string checkpoint_kind = 12;
+  optional uint32 migration_max_downtime_ms = 13;
+  UvmPortabilityAssessment portability_assessment = 14;
+  UvmPortabilityAssessmentSource portability_assessment_source = 15;
+  UvmPortabilityAssessmentUnavailableReason portability_assessment_unavailable_reason = 16;
+  string workflow_kind = 17;
+}
+
+message GetUvmMigrationRequest {
+  string migration_id = 1;
+}
+
+message UvmMigrationListRequest {}
+
+message UvmMigrationListReply {
+  repeated UvmMigrationReply values = 1;
+}
+
+message UvmSnapshotRequest {
+  string instance_id = 1;
+  string name = 2;
+  bool crash_consistent = 3;
+}
+
+message UvmSnapshotReply {
+  string id = 1;
+  string instance_id = 2;
+  string state = 3;
+  string name = 4;
+  bool crash_consistent = 5;
+  string created_at = 6;
+  ResourceMetadata metadata = 7;
+}
+
+message GetUvmSnapshotRequest {
+  string snapshot_id = 1;
+}
+
+message UvmSnapshotListRequest {}
+
+message UvmSnapshotListReply {
+  repeated UvmSnapshotReply values = 1;
+}
+
+message UvmRestoreRequest {
+  string instance_id = 1;
+  string snapshot_id = 2;
+}
+
+message GetUvmOutboxMessageRequest {
+  string message_id = 1;
+}
+
+message UvmOutboxListRequest {}
+
+message UvmOutboxMessageReply {
+  string id = 1;
+  string topic = 2;
+  optional string idempotency_key = 3;
+  string payload_json = 4;
+  string created_at = 5;
+  string updated_at = 6;
+  string state = 7;
+}
+
+message UvmOutboxListReply {
+  repeated UvmOutboxMessageReply values = 1;
+}
+
+message ImportUvmImageRequest {
+  string source_kind = 1;
+  string source_uri = 2;
+  string guest_os = 3;
+  string architecture = 4;
+  string digest = 5;
+  string signature_attestation = 6;
+  string provenance_attestation = 7;
+  string license_token = 8;
+}
+
+message UvmArtifactAttestationRecord {
+  string kind = 1;
+  string reference = 2;
+  string recorded_at = 3;
+}
+
+message UvmImageReply {
+  string id = 1;
+  bool verified = 2;
+  optional string promoted_channel = 3;
+  string guest_profile = 4;
+  string machine_family = 5;
+  string claim_tier = 6;
+  UvmCompatibilityRequirement compatibility_requirement = 7;
+  repeated UvmCompatibilityEvidence compatibility_evidence = 8;
+  UvmExecutionIntent execution_intent = 9;
+  string source_kind = 10;
+  string source_uri = 11;
+  string guest_os = 12;
+  string architecture = 13;
+  optional string guest_profile_id = 14;
+  bool install_media = 15;
+  string preferred_boot_device = 16;
+  optional string overlay_policy_id = 17;
+  string digest = 18;
+  reserved 19, 20;
+  string legal_policy = 21;
+  ResourceMetadata metadata = 22;
+  repeated UvmImagePublicationManifest publication_manifests = 23;
+  repeated UvmArtifactAttestationRecord attestations = 24;
+}
+
+message VerifyUvmImageRequest {
+  string image_id = 1;
+  string expected_digest = 2;
+  bool require_signature = 3;
+  bool require_provenance = 4;
+}
+
+message PromoteUvmImageRequest {
+  string image_id = 1;
+  string channel = 2;
+  string host_class = 3;
+  string machine_family = 4;
+  string guest_profile = 5;
+  string region = 6;
+  string cell = 7;
+}
+
+message UvmImagePublicationManifest {
+  string channel = 1;
+  string host_class = 2;
+  string machine_family = 3;
+  string guest_profile = 4;
+  string region = 5;
+  string cell = 6;
+  string audit_event_id = 7;
+  string published_at = 8;
+}
+
+message UvmFirmwareSignerLineageEntry {
+  string role = 1;
+  string signer = 2;
+  string issuer = 3;
+}
+
+message CreateUvmFirmwareBundleRequest {
+  string name = 1;
+  string architecture = 2;
+  string firmware_profile = 3;
+  string artifact_uri = 4;
+  bool secure_boot_capable = 5;
+  bool verified = 6;
+  string secure_boot_posture = 7;
+  repeated UvmFirmwareSignerLineageEntry signer_lineage = 8;
+  string signature_attestation = 9;
+  string provenance_attestation = 10;
+}
+
+message UvmFirmwareBundleReply {
+  string id = 1;
+  string name = 2;
+  string architecture = 3;
+  string firmware_profile = 4;
+  string artifact_uri = 5;
+  bool secure_boot_capable = 6;
+  bool verified = 7;
+  ResourceMetadata metadata = 8;
+  string secure_boot_posture = 9;
+  repeated UvmFirmwareSignerLineageEntry signer_lineage = 10;
+  uint32 policy_revision = 11;
+  repeated UvmArtifactAttestationRecord attestations = 12;
+}
+
+message UvmFirmwareBundleListRequest {}
+
+message UvmFirmwareBundleListReply {
+  repeated UvmFirmwareBundleReply bundles = 1;
+}
+
+message CreateUvmGuestProfileRequest {
+  string name = 1;
+  string guest_profile = 2;
+  string architecture = 3;
+  string machine_family = 4;
+  string boot_path = 5;
+  string firmware_bundle_id = 6;
+}
+
+message UvmGuestProfileReply {
+  string id = 1;
+  string name = 2;
+  string guest_profile = 3;
+  string architecture = 4;
+  string machine_family = 5;
+  string boot_path = 6;
+  optional string firmware_bundle_id = 7;
+  ResourceMetadata metadata = 8;
+}
+
+message UvmGuestProfileListRequest {}
+
+message UvmGuestProfileListReply {
+  repeated UvmGuestProfileReply profiles = 1;
+}
+
+message UvmOverlayChainCompatibilityRules {
+  repeated string base_source_kinds = 1;
+  repeated string machine_families = 2;
+  repeated string guest_profiles = 3;
+}
+
+message UvmOverlayPublicationRules {
+  repeated string allowed_channels = 1;
+  repeated string allowed_host_classes = 2;
+  repeated string allowed_regions = 3;
+  repeated string allowed_cells = 4;
+}
+
+message CreateUvmOverlayPolicyRequest {
+  string name = 1;
+  string root_mode = 2;
+  uint32 writable_layer_limit = 3;
+  bool template_clone_enabled = 4;
+  UvmOverlayChainCompatibilityRules chain_compatibility = 5;
+  UvmOverlayPublicationRules publication = 6;
+  string signature_attestation = 7;
+  string provenance_attestation = 8;
+}
+
+message UvmOverlayPolicyReply {
+  string id = 1;
+  string name = 2;
+  string root_mode = 3;
+  uint32 writable_layer_limit = 4;
+  bool template_clone_enabled = 5;
+  ResourceMetadata metadata = 6;
+  UvmOverlayChainCompatibilityRules chain_compatibility = 7;
+  UvmOverlayPublicationRules publication = 8;
+  repeated UvmArtifactAttestationRecord attestations = 9;
+}
+
+message UvmOverlayPolicyListRequest {}
+
+message UvmOverlayPolicyListReply {
+  repeated UvmOverlayPolicyReply policies = 1;
+}
+
+message CreateUvmRegionCellPolicyRequest {
+  string name = 1;
+  string region = 2;
+  optional string cell = 3;
+  string policy_mode = 4;
+  bool require_local_artifacts = 5;
+  repeated string fallback_regions = 6;
+  repeated string fallback_cells = 7;
+  string notes = 8;
+}
+
+message UvmRegionCellPolicyReply {
+  string id = 1;
+  string name = 2;
+  string region = 3;
+  optional string cell = 4;
+  string policy_mode = 5;
+  bool require_local_artifacts = 6;
+  repeated string fallback_regions = 7;
+  repeated string fallback_cells = 8;
+  string notes = 9;
+  ResourceMetadata metadata = 10;
+}
+
+message UvmRegionCellPolicyListRequest {}
+
+message UvmRegionCellPolicyListReply {
+  repeated UvmRegionCellPolicyReply policies = 1;
+}
+
+message UvmCompatibilityRow {
+  string host_family = 1;
+  string guest_architecture = 2;
+  string accelerator_backend = 3;
+  bool secure_boot_supported = 4;
+  bool live_migration_supported = 5;
+  bool policy_approved = 6;
+  string notes = 7;
+  string machine_family = 8;
+  string guest_profile = 9;
+  string claim_tier = 10;
+  string id = 11;
+  string host_class = 12;
+}
+
+message UvmCompatibilityMatrixRequest {}
+
+message UvmCompatibilityMatrixReply {
+  repeated UvmCompatibilityRow rows = 1;
+}
+
+message UvmCompatibilityRequirement {
+  string guest_architecture = 1;
+  string machine_family = 2;
+  string guest_profile = 3;
+  string boot_device = 4;
+  string claim_tier = 5;
+}
+
+message UvmCompatibilityEvidence {
+  string source = 1;
+  string summary = 2;
+  string evidence_mode = 3;
+}
+
+message UvmCompatibilityAssessment {
+  UvmCompatibilityRequirement requirement = 1;
+  bool supported = 2;
+  repeated string matched_backends = 3;
+  repeated string blockers = 4;
+  repeated UvmCompatibilityEvidence evidence = 5;
+}
+
+message UvmExecutionIntent {
+  optional string preferred_backend = 1;
+  string fallback_policy = 2;
+  string required_portability_tier = 3;
+  string evidence_strictness = 4;
+}
+
+message UvmPortabilityAssessment {
+  UvmExecutionIntent intent = 1;
+  bool supported = 2;
+  repeated string eligible_backends = 3;
+  optional string selected_backend = 4;
+  bool selected_via_fallback = 5;
+  optional string selection_reason = 6;
+  repeated string blockers = 7;
+  repeated UvmCompatibilityEvidence evidence = 8;
+}
+
+enum UvmPortabilityAssessmentSource {
+  UVM_PORTABILITY_ASSESSMENT_SOURCE_UNAVAILABLE = 0;
+  UVM_PORTABILITY_ASSESSMENT_SOURCE_FIRST_PLACEMENT_LINEAGE = 1;
+  UVM_PORTABILITY_ASSESSMENT_SOURCE_LINKED_RUNTIME_PREFLIGHT_LINEAGE = 2;
+  UVM_PORTABILITY_ASSESSMENT_SOURCE_REQUEST_FALLBACK = 3;
+  UVM_PORTABILITY_ASSESSMENT_SOURCE_RUNTIME_PREFLIGHT_FALLBACK = 4;
+}
+
+enum UvmPortabilityAssessmentUnavailableReason {
+  UVM_PORTABILITY_ASSESSMENT_UNAVAILABLE_REASON_UNSPECIFIED = 0;
+  UVM_PORTABILITY_ASSESSMENT_UNAVAILABLE_REASON_AUTHORITATIVE_RUNTIME_LINEAGE_MISSING_PORTABILITY_EVIDENCE = 1;
+}
+
+message RegisterUvmNodeCapabilityRequest {
+  string node_id = 1;
+  string host_platform = 2;
+  string architecture = 3;
+  repeated string accelerator_backends = 4;
+  uint32 max_vcpu = 5;
+  uint64 max_memory_mb = 6;
+  uint32 numa_nodes = 7;
+  bool supports_secure_boot = 8;
+  bool supports_live_migration = 9;
+  bool supports_pci_passthrough = 10;
+  bool software_runner_supported = 11;
+  bool container_restricted = 12;
+  string host_evidence_mode = 13;
+}
+
+message UvmNodeCapabilityReply {
+  string id = 1;
+  string node_id = 2;
+  string host_platform = 3;
+  string architecture = 4;
+  repeated string accelerator_backends = 5;
+  repeated string supported_machine_families = 6;
+  repeated string supported_guest_profiles = 7;
+  string default_claim_tier = 8;
+  bool software_runner_supported = 9;
+  bool container_restricted = 10;
+  string host_evidence_mode = 11;
+  uint32 max_vcpu = 12;
+  uint64 max_memory_mb = 13;
+  uint32 numa_nodes = 14;
+  bool supports_secure_boot = 15;
+  bool supports_live_migration = 16;
+  bool supports_pci_passthrough = 17;
+  ResourceMetadata metadata = 18;
+  string host_class = 19;
+}
+
+message SelectUvmAdapterRequest {
+  string capability_id = 1;
+  string guest_architecture = 2;
+  bool apple_guest = 3;
+  bool requires_live_migration = 4;
+  bool require_secure_boot = 5;
+}
+
+message UvmAdapterSelectionReply {
+  string capability_id = 1;
+  string accelerator_backend = 2;
+  string machine_family = 3;
+  string guest_profile = 4;
+  string claim_tier = 5;
+  string reason = 6;
+}
+
+message RecordUvmPerfAttestationRequest {
+  string instance_id = 1;
+  string workload_class = 2;
+  uint32 cpu_overhead_pct = 3;
+  uint32 memory_overhead_pct = 4;
+  uint32 block_io_latency_overhead_pct = 5;
+  uint32 network_latency_overhead_pct = 6;
+  uint32 jitter_pct = 7;
+  string claim_tier = 8;
+  string claim_evidence_mode = 9;
+}
+
+message UvmPerfAttestationReply {
+  string id = 1;
+  bool native_indistinguishable = 2;
+  string claim_tier = 3;
+  string claim_evidence_mode = 4;
+  string instance_id = 5;
+  string workload_class = 6;
+  uint32 cpu_overhead_pct = 7;
+  uint32 memory_overhead_pct = 8;
+  uint32 block_io_latency_overhead_pct = 9;
+  uint32 network_latency_overhead_pct = 10;
+  uint32 jitter_pct = 11;
+  string measured_at = 12;
+  ResourceMetadata metadata = 13;
+}
+
+message RecordUvmFailureReportRequest {
+  string instance_id = 1;
+  string category = 2;
+  string severity = 3;
+  string summary = 4;
+  bool recovered = 5;
+  bool forensic_capture_requested = 6;
+}
+
+message UvmFailureReportReply {
+  string id = 1;
+  string severity = 2;
+  optional string instance_id = 3;
+  string category = 4;
+  string summary = 5;
+  bool recovered = 6;
+  bool forensic_capture_requested = 7;
+  string created_at = 8;
+  ResourceMetadata metadata = 9;
+}
+
+message RecordUvmHostEvidenceRequest {
+  string evidence_mode = 1;
+  string host_platform = 2;
+  string execution_environment = 3;
+  bool hardware_virtualization = 4;
+  bool nested_virtualization = 5;
+  bool qemu_available = 6;
+  string note = 7;
+}
+
+message UvmHostEvidenceReply {
+  string id = 1;
+  string evidence_mode = 2;
+  string host_platform = 3;
+  string execution_environment = 4;
+  bool hardware_virtualization = 5;
+  bool nested_virtualization = 6;
+  bool qemu_available = 7;
+  optional string note = 8;
+  string collected_at = 9;
+  ResourceMetadata metadata = 10;
+  string host_class = 11;
+}
+
+message UvmHostEvidenceListRequest {}
+
+message UvmHostEvidenceListReply {
+  repeated UvmHostEvidenceReply values = 1;
+}
+
+message UvmPreflightEvidenceArtifactListRequest {}
+
+message UvmPreflightEvidenceArtifactReply {
+  string id = 1;
+  string runtime_preflight_id = 2;
+  string host_platform = 3;
+  string host_class = 4;
+  string host_class_evidence_key = 5;
+  optional string evidence_mode = 6;
+  string claim_tier = 7;
+  string guest_architecture = 8;
+  string machine_family = 9;
+  string guest_profile = 10;
+  optional string selected_backend = 11;
+  UvmCompatibilityAssessment compatibility_assessment = 12;
+  UvmPortabilityAssessment portability_assessment = 13;
+  string created_at = 14;
+}
+
+message UvmPreflightEvidenceArtifactListReply {
+  repeated UvmPreflightEvidenceArtifactReply values = 1;
+}
+
+message CreateUvmClaimDecisionRequest {
+  string host_evidence_id = 1;
+  UvmPortabilityAssessment portability_assessment = 2;
+  string runtime_preflight_id = 3;
+}
+
+message UvmClaimDecisionReply {
+  string id = 1;
+  optional string host_evidence_id = 2;
+  string highest_claim_tier = 3;
+  string claim_status = 4;
+  bool native_indistinguishable_status = 5;
+  uint32 prohibited_claim_count = 6;
+  UvmPortabilityAssessment portability_assessment = 7;
+  optional string runtime_preflight_id = 8;
+  UvmPortabilityAssessmentSource portability_assessment_source = 9;
+  optional string runtime_session_id = 10;
+  optional UvmPortabilityAssessmentUnavailableReason portability_assessment_unavailable_reason = 11;
+  repeated string missing_required_workload_classes = 12;
+  repeated string failing_workload_classes = 13;
+  string decided_at = 14;
+  // Claim-decision metadata annotations may include observed_highest_claim_tier,
+  // benchmark_claim_tier_ceiling, claim_tier_demoted_from,
+  // benchmark_host_class_evidence_key, benchmark_ready_scenarios, and
+  // publication_scope_host_class_evidence_key.
+  ResourceMetadata metadata = 15;
+  string observed_highest_claim_tier = 16;
+  string benchmark_claim_tier_ceiling = 17;
+}
+
+message UvmClaimDecisionListRequest {}
+
+message UvmClaimDecisionListReply {
+  repeated UvmClaimDecisionReply values = 1;
+}
+
+message CreateUvmBenchmarkCampaignRequest {
+  string name = 1;
+  string target = 2;
+  string workload_class = 3;
+  bool require_qemu_baseline = 4;
+  bool require_container_baseline = 5;
+}
+
+message UvmBenchmarkCampaignReply {
+  string id = 1;
+  string name = 2;
+  string target = 3;
+  string workload_class = 4;
+  bool require_qemu_baseline = 5;
+  bool require_container_baseline = 6;
+  string state = 7;
+  ResourceMetadata metadata = 8;
+}
+
+message UvmBenchmarkCampaignListRequest {}
+
+message UvmBenchmarkCampaignListReply {
+  repeated UvmBenchmarkCampaignReply values = 1;
+}
+
+message CreateUvmBenchmarkBaselineRequest {
+  string campaign_id = 1;
+  string engine = 2;
+  string evidence_mode = 3;
+  bool measured = 4;
+  uint32 boot_time_ms = 5;
+  uint32 steady_state_score = 6;
+  uint32 control_plane_p99_ms = 7;
+  string host_evidence_id = 8;
+  string note = 9;
+}
+
+message UvmBenchmarkBaselineReply {
+  string id = 1;
+  string campaign_id = 2;
+  string engine = 3;
+  string evidence_mode = 4;
+  bool measured = 5;
+  optional uint32 boot_time_ms = 6;
+  optional uint32 steady_state_score = 7;
+  optional uint32 control_plane_p99_ms = 8;
+  optional string host_evidence_id = 9;
+  optional string note = 10;
+  ResourceMetadata metadata = 11;
+}
+
+message UvmBenchmarkBaselineListRequest {}
+
+message UvmBenchmarkBaselineListReply {
+  repeated UvmBenchmarkBaselineReply values = 1;
+}
+
+message CreateUvmBenchmarkResultRequest {
+  string campaign_id = 1;
+  string engine = 2;
+  string scenario = 3;
+  string evidence_mode = 4;
+  bool measured = 5;
+  uint32 boot_time_ms = 6;
+  uint32 steady_state_score = 7;
+  uint32 control_plane_p99_ms = 8;
+  string host_evidence_id = 9;
+  string note = 10;
+}
+
+message UvmBenchmarkResultReply {
+  string id = 1;
+  string campaign_id = 2;
+  string engine = 3;
+  string scenario = 4;
+  string evidence_mode = 5;
+  bool measured = 6;
+  uint32 boot_time_ms = 7;
+  uint32 steady_state_score = 8;
+  uint32 control_plane_p99_ms = 9;
+  optional string host_evidence_id = 10;
+  optional string note = 11;
+  ResourceMetadata metadata = 12;
+}
+
+message UvmBenchmarkResultListRequest {}
+
+message UvmBenchmarkResultListReply {
+  repeated UvmBenchmarkResultReply values = 1;
+}
+
+message UvmNativeClaimStatusRequest {}
+
+message UvmNativeClaimStatusReply {
+  bool native_indistinguishable_status = 1;
+  uint32 qualified_attestations = 2;
+  uint32 total_attestations = 3;
+  uint32 unrecovered_critical_failures = 4;
+  string highest_claim_tier = 5;
+  uint32 prohibited_claim_count = 6;
+  string claim_status = 7;
+  string host_evidence_id = 8;
+  UvmPortabilityAssessment portability_assessment = 9;
+  UvmPortabilityAssessmentSource portability_assessment_source = 10;
+  string runtime_preflight_id = 11;
+  string runtime_session_id = 12;
+  UvmPortabilityAssessmentUnavailableReason portability_assessment_unavailable_reason = 13;
+  string observed_highest_claim_tier = 14;
+  string benchmark_claim_tier_ceiling = 15;
+  repeated string benchmark_ready_scenarios = 16;
+}
+
+message UvmRuntimeSessionActionRequest {
+  string runtime_session_id = 1;
+}
+
+message RegisterUvmRuntimeSessionRequest {
+  string instance_id = 1;
+  string node_id = 2;
+  string capability_id = 3;
+  string guest_architecture = 4;
+  string guest_os = 5;
+  string disk_image = 6;
+  uint32 vcpu = 7;
+  uint64 memory_mb = 8;
+  string firmware_profile = 9;
+  bool require_secure_boot = 10;
+  bool requires_live_migration = 11;
+  string isolation_profile = 12;
+  string restart_policy = 13;
+  uint32 max_restarts = 14;
+  bool apple_guest_approved = 15;
+  string cdrom_image = 16;
+  string boot_device = 17;
+}
+
+message UvmRuntimeIncarnationReply {
+  uint32 sequence = 1;
+  string kind = 2;
+  optional uint32 previous_sequence = 3;
+  optional string previous_state = 4;
+  optional string source_node_id = 5;
+  string target_node_id = 6;
+  optional string checkpoint_id = 7;
+  optional string migration_id = 8;
+  optional string reason = 9;
+  string activated_at = 10;
+}
+
+message UvmRuntimeSessionReply {
+  string id = 1;
+  string instance_id = 2;
+  string node_id = 3;
+  string state = 4;
+  string accelerator_backend = 5;
+  uint32 start_attempts = 6;
+  string machine_family = 7;
+  string guest_profile = 8;
+  string claim_tier = 9;
+  string runner_phase = 10;
+  string runtime_evidence_mode = 11;
+  optional string last_checkpoint_id = 12;
+  optional string restored_from_checkpoint_id = 13;
+  uint32 restore_count = 14;
+  string capability_id = 15;
+  string guest_architecture = 16;
+  uint32 vcpu = 17;
+  uint64 memory_mb = 18;
+  string guest_os = 19;
+  string cpu_topology_profile = 20;
+  string numa_policy_profile = 21;
+  repeated uint32 planned_pinned_numa_nodes = 22;
+  repeated uint64 planned_memory_per_numa_mb = 23;
+  string migration_policy = 24;
+  repeated string worker_states = 25;
+  string planned_migration_checkpoint_kind = 26;
+  uint32 planned_migration_downtime_ms = 27;
+  string launch_program = 28;
+  repeated string launch_args = 29;
+  repeated string launch_env = 30;
+  string isolation_profile = 31;
+  string boot_path = 32;
+  string execution_class = 33;
+  string memory_backing = 34;
+  string device_model = 35;
+  repeated string sandbox_layers = 36;
+  repeated string telemetry_streams = 37;
+  string restart_policy = 38;
+  uint32 max_restarts = 39;
+  optional string last_heartbeat_at = 40;
+  uint64 heartbeat_sequence = 41;
+  optional uint32 observed_pid = 42;
+  optional uint64 observed_assigned_memory_mb = 43;
+  string hypervisor_health = 44;
+  optional string last_exit_reason = 45;
+  bool migration_in_progress = 46;
+  optional string last_restore_at = 47;
+  optional string last_error = 48;
+  string created_at = 49;
+  string last_transition_at = 50;
+  ResourceMetadata metadata = 51;
+  UvmRuntimeIncarnationReply current_incarnation = 52;
+  repeated UvmRuntimeIncarnationReply incarnation_lineage = 53;
+  optional uint64 last_runner_sequence_id = 54;
+  optional string last_lifecycle_event_id = 55;
+}
+
+message GetUvmRuntimeSessionRequest {
+  string runtime_session_id = 1;
+}
+
+message GetUvmInstanceRuntimeSessionRequest {
+  string instance_id = 1;
+  string runtime_session_id = 2;
+}
+
+message UvmInstanceRuntimeSessionListRequest {
+  string instance_id = 1;
+}
+
+message UvmRuntimeSessionListRequest {}
+
+message UvmRuntimeSessionListReply {
+  repeated UvmRuntimeSessionReply values = 1;
+}
+
+message RestoreUvmRuntimeSessionRequest {
+  string runtime_session_id = 1;
+  string checkpoint_id = 2;
+  string reason = 3;
+}
+
+message UvmRuntimeFailureRequest {
+  string runtime_session_id = 1;
+  string error = 2;
+}
+
+message UvmRuntimeRecoverRequest {
+  string runtime_session_id = 1;
+  string reason = 2;
+}
+
+message RecordUvmRuntimeHeartbeatRequest {
+  string runtime_session_id = 1;
+  uint32 observed_pid = 2;
+  uint64 observed_assigned_memory_mb = 3;
+  string hypervisor_health = 4;
+  string exit_reason = 5;
+  string runner_phase = 6;
+  repeated string worker_states = 7;
+  optional uint64 runner_sequence_id = 8;
+  optional string lifecycle_event_id = 9;
+}
+
+message UvmRuntimeHealthRequest {
+  uint32 stale_after_seconds = 1;
+}
+
+message UvmRuntimeHealthReply {
+  uint32 total_sessions = 1;
+  uint32 running_sessions = 2;
+  uint32 stale_sessions = 3;
+  uint32 degraded_sessions = 4;
+  uint32 failed_sessions = 5;
+  uint32 software_backend_sessions = 6;
+  uint32 restored_sessions = 7;
+}
+
+message UvmReconciliationRequest {}
+
+message UvmReconciliationReply {
+  string id = 1;
+  string generated_at = 2;
+  uint32 total_instances = 3;
+  uint32 total_runtime_sessions = 4;
+  string status = 5;
+  repeated UvmReconciliationIssue issues = 6;
+}
+
+message UvmReconciliationIssue {
+  string severity = 1;
+  string code = 2;
+  optional string instance_id = 3;
+  optional string runtime_session_id = 4;
+  string detail = 5;
+}
+
+message UvmRuntimePreflightRequest {
+  string capability_id = 1;
+  string guest_architecture = 2;
+  string guest_os = 3;
+  bool require_secure_boot = 4;
+  bool requires_live_migration = 5;
+  bool apple_guest_approved = 6;
+  string cdrom_image = 7;
+  string boot_device = 8;
+  UvmCompatibilityRequirement compatibility_requirement = 9;
+  UvmExecutionIntent execution_intent = 10;
+}
+
+message UvmRuntimePreflightReply {
+  string id = 1;
+  string capability_id = 2;
+  bool legal_allowed = 3;
+  optional string selected_backend = 4;
+  repeated string blockers = 5;
+  string machine_family = 6;
+  string guest_profile = 7;
+  string claim_tier = 8;
+  UvmCompatibilityAssessment compatibility_assessment = 9;
+  UvmPortabilityAssessment portability_assessment = 10;
+  string node_id = 11;
+  string guest_architecture = 12;
+  string guest_os = 13;
+  bool apple_guest = 14;
+  bool placement_admitted = 15;
+  repeated uint32 placement_pinned_numa_nodes = 16;
+  bool require_secure_boot = 17;
+  bool requires_live_migration = 18;
+  optional string launch_program = 19;
+  optional string migration_recommended_checkpoint_kind = 20;
+  optional uint32 migration_expected_downtime_ms = 21;
+  string created_at = 22;
+  ResourceMetadata metadata = 23;
+}
+
+message CreateUvmRuntimeCheckpointRequest {
+  string runtime_session_id = 1;
+  string kind = 2;
+  string checkpoint_uri = 3;
+  string memory_bitmap_hash = 4;
+  uint64 disk_generation = 5;
+  string target_node_id = 6;
+}
+
+message UvmRuntimeCheckpointReply {
+  string id = 1;
+  string runtime_session_id = 2;
+  string instance_id = 3;
+  string source_node_id = 4;
+  string target_node_id = 5;
+  string envelope_digest = 6;
+  string kind = 7;
+  string checkpoint_uri = 8;
+  string memory_bitmap_hash = 9;
+  uint64 disk_generation = 10;
+  string created_at = 11;
+  ResourceMetadata metadata = 12;
+}
+
+message GetUvmRuntimeCheckpointRequest {
+  string checkpoint_id = 1;
+}
+
+message GetUvmInstanceRuntimeCheckpointRequest {
+  string instance_id = 1;
+  string checkpoint_id = 2;
+}
+
+message UvmInstanceRuntimeCheckpointListRequest {
+  string instance_id = 1;
+}
+
+message UvmRuntimeCheckpointListRequest {}
+
+message UvmRuntimeCheckpointListReply {
+  repeated UvmRuntimeCheckpointReply values = 1;
+}
+
+message UvmRuntimeMigrationPreflightRequest {
+  string runtime_session_id = 1;
+  string to_node_id = 2;
+  string target_capability_id = 3;
+  bool require_secure_boot = 4;
+  UvmExecutionIntent execution_intent = 5;
+}
+
+message UvmRuntimeMigrationPreflightReply {
+  string id = 1;
+  bool legal_allowed = 2;
+  repeated string blockers = 3;
+  optional string selected_backend = 4;
+  string machine_family = 5;
+  string guest_profile = 6;
+  string claim_tier = 7;
+  UvmPortabilityAssessment portability_assessment = 8;
+  string capability_id = 9;
+  string node_id = 10;
+  string guest_architecture = 11;
+  string guest_os = 12;
+  bool apple_guest = 13;
+  bool placement_admitted = 14;
+  repeated uint32 placement_pinned_numa_nodes = 15;
+  bool require_secure_boot = 16;
+  bool requires_live_migration = 17;
+  optional string launch_program = 18;
+  optional string migration_recommended_checkpoint_kind = 19;
+  optional uint32 migration_expected_downtime_ms = 20;
+  UvmCompatibilityAssessment compatibility_assessment = 21;
+  string created_at = 22;
+  ResourceMetadata metadata = 23;
+}
+
+message StartUvmRuntimeMigrationRequest {
+  string runtime_session_id = 1;
+  string to_node_id = 2;
+  string target_capability_id = 3;
+  string kind = 4;
+  string checkpoint_uri = 5;
+  string memory_bitmap_hash = 6;
+  uint64 disk_generation = 7;
+  string reason = 8;
+}
+
+message ResolveUvmRuntimeMigrationRequest {
+  string migration_id = 1;
+  string error = 2;
+}
+
+message UvmRuntimeMigrationReply {
+  string id = 1;
+  string runtime_session_id = 2;
+  string source_node_id = 3;
+  string target_node_id = 4;
+  string state = 5;
+  string checkpoint_id = 6;
+  string instance_id = 7;
+  string target_capability_id = 8;
+  string reason = 9;
+  optional string failure_detail = 10;
+  string updated_at = 11;
+  ResourceMetadata metadata = 12;
+}
+
+message GetUvmRuntimeMigrationRequest {
+  string migration_id = 1;
+}
+
+message UvmRuntimeMigrationListRequest {}
+
+message UvmRuntimeMigrationListReply {
+  repeated UvmRuntimeMigrationReply values = 1;
+}
+
+service UvmService {
+  rpc Health(HealthRequest) returns (HealthReply);
+  rpc ListTemplates(UvmTemplateListRequest) returns (UvmTemplateListReply);
+  rpc GetTemplate(GetUvmTemplateRequest) returns (UvmTemplateReply);
+  rpc CreateTemplate(CreateUvmTemplateRequest) returns (UvmTemplateReply);
+  rpc ListInstances(UvmInstanceListRequest) returns (UvmInstanceListReply);
+  rpc GetInstance(GetUvmInstanceRequest) returns (UvmInstanceReply);
+  rpc CreateInstance(CreateUvmInstanceRequest) returns (UvmInstanceReply);
+  rpc StartInstance(UvmLifecycleRequest) returns (UvmInstanceReply);
+  rpc StopInstance(UvmLifecycleRequest) returns (UvmInstanceReply);
+  rpc RebootInstance(UvmLifecycleRequest) returns (UvmInstanceReply);
+  rpc ListMigrations(UvmMigrationListRequest) returns (UvmMigrationListReply);
+  rpc GetMigration(GetUvmMigrationRequest) returns (UvmMigrationReply);
+  rpc MigrateInstance(UvmMigrateRequest) returns (UvmMigrationReply);
+  rpc ListSnapshots(UvmSnapshotListRequest) returns (UvmSnapshotListReply);
+  rpc GetSnapshot(GetUvmSnapshotRequest) returns (UvmSnapshotReply);
+  rpc SnapshotInstance(UvmSnapshotRequest) returns (UvmSnapshotReply);
+  rpc RestoreInstance(UvmRestoreRequest) returns (UvmInstanceReply);
+  rpc ListOutboxMessages(UvmOutboxListRequest) returns (UvmOutboxListReply);
+  rpc GetOutboxMessage(GetUvmOutboxMessageRequest) returns (UvmOutboxMessageReply);
+  rpc ImportImage(ImportUvmImageRequest) returns (UvmImageReply);
+  rpc VerifyImage(VerifyUvmImageRequest) returns (UvmImageReply);
+  rpc PromoteImage(PromoteUvmImageRequest) returns (UvmImageReply);
+  rpc CreateFirmwareBundle(CreateUvmFirmwareBundleRequest) returns (UvmFirmwareBundleReply);
+  rpc ListFirmwareBundles(UvmFirmwareBundleListRequest) returns (UvmFirmwareBundleListReply);
+  rpc CreateGuestProfile(CreateUvmGuestProfileRequest) returns (UvmGuestProfileReply);
+  rpc ListGuestProfiles(UvmGuestProfileListRequest) returns (UvmGuestProfileListReply);
+  rpc CreateOverlayPolicy(CreateUvmOverlayPolicyRequest) returns (UvmOverlayPolicyReply);
+  rpc ListOverlayPolicies(UvmOverlayPolicyListRequest) returns (UvmOverlayPolicyListReply);
+  rpc CreateRegionCellPolicy(CreateUvmRegionCellPolicyRequest) returns (UvmRegionCellPolicyReply);
+  rpc ListRegionCellPolicies(UvmRegionCellPolicyListRequest) returns (UvmRegionCellPolicyListReply);
+  rpc GetCompatibilityMatrix(UvmCompatibilityMatrixRequest) returns (UvmCompatibilityMatrixReply);
+  rpc RegisterNodeCapability(RegisterUvmNodeCapabilityRequest) returns (UvmNodeCapabilityReply);
+  rpc SelectAdapter(SelectUvmAdapterRequest) returns (UvmAdapterSelectionReply);
+  rpc RecordPerfAttestation(RecordUvmPerfAttestationRequest) returns (UvmPerfAttestationReply);
+  rpc RecordFailureReport(RecordUvmFailureReportRequest) returns (UvmFailureReportReply);
+  rpc RecordHostEvidence(RecordUvmHostEvidenceRequest) returns (UvmHostEvidenceReply);
+  rpc ListHostEvidence(UvmHostEvidenceListRequest) returns (UvmHostEvidenceListReply);
+  rpc ListPreflightEvidenceArtifacts(UvmPreflightEvidenceArtifactListRequest) returns (UvmPreflightEvidenceArtifactListReply);
+  rpc CreateClaimDecision(CreateUvmClaimDecisionRequest) returns (UvmClaimDecisionReply);
+  rpc ListClaimDecisions(UvmClaimDecisionListRequest) returns (UvmClaimDecisionListReply);
+  rpc CreateBenchmarkCampaign(CreateUvmBenchmarkCampaignRequest) returns (UvmBenchmarkCampaignReply);
+  rpc ListBenchmarkCampaigns(UvmBenchmarkCampaignListRequest) returns (UvmBenchmarkCampaignListReply);
+  rpc CreateBenchmarkBaseline(CreateUvmBenchmarkBaselineRequest) returns (UvmBenchmarkBaselineReply);
+  rpc ListBenchmarkBaselines(UvmBenchmarkBaselineListRequest) returns (UvmBenchmarkBaselineListReply);
+  rpc CreateBenchmarkResult(CreateUvmBenchmarkResultRequest) returns (UvmBenchmarkResultReply);
+  rpc ListBenchmarkResults(UvmBenchmarkResultListRequest) returns (UvmBenchmarkResultListReply);
+  rpc GetNativeClaimStatus(UvmNativeClaimStatusRequest) returns (UvmNativeClaimStatusReply);
+  rpc ListRuntimeSessions(UvmRuntimeSessionListRequest) returns (UvmRuntimeSessionListReply);
+  rpc GetRuntimeSession(GetUvmRuntimeSessionRequest) returns (UvmRuntimeSessionReply);
+  rpc ListInstanceRuntimeSessions(UvmInstanceRuntimeSessionListRequest) returns (UvmRuntimeSessionListReply);
+  rpc GetInstanceRuntimeSession(GetUvmInstanceRuntimeSessionRequest) returns (UvmRuntimeSessionReply);
+  rpc RegisterRuntimeSession(RegisterUvmRuntimeSessionRequest) returns (UvmRuntimeSessionReply);
+  rpc PrepareRuntimeSession(UvmRuntimeSessionActionRequest) returns (UvmRuntimeSessionReply);
+  rpc StartRuntimeSession(UvmRuntimeSessionActionRequest) returns (UvmRuntimeSessionReply);
+  rpc StopRuntimeSession(UvmRuntimeSessionActionRequest) returns (UvmRuntimeSessionReply);
+  rpc RestoreRuntimeSession(RestoreUvmRuntimeSessionRequest) returns (UvmRuntimeSessionReply);
+  rpc FailRuntimeSession(UvmRuntimeFailureRequest) returns (UvmRuntimeSessionReply);
+  rpc BeginRuntimeRecovery(UvmRuntimeRecoverRequest) returns (UvmRuntimeSessionReply);
+  rpc CompleteRuntimeRecovery(UvmRuntimeSessionActionRequest) returns (UvmRuntimeSessionReply);
+  rpc RecordRuntimeHeartbeat(RecordUvmRuntimeHeartbeatRequest) returns (UvmRuntimeSessionReply);
+  rpc GetRuntimeHealth(UvmRuntimeHealthRequest) returns (UvmRuntimeHealthReply);
+  rpc PreflightRuntime(UvmRuntimePreflightRequest) returns (UvmRuntimePreflightReply);
+  rpc ListRuntimeCheckpoints(UvmRuntimeCheckpointListRequest) returns (UvmRuntimeCheckpointListReply);
+  rpc GetRuntimeCheckpoint(GetUvmRuntimeCheckpointRequest) returns (UvmRuntimeCheckpointReply);
+  rpc ListInstanceRuntimeCheckpoints(UvmInstanceRuntimeCheckpointListRequest) returns (UvmRuntimeCheckpointListReply);
+  rpc GetInstanceRuntimeCheckpoint(GetUvmInstanceRuntimeCheckpointRequest) returns (UvmRuntimeCheckpointReply);
+  rpc CreateRuntimeCheckpoint(CreateUvmRuntimeCheckpointRequest) returns (UvmRuntimeCheckpointReply);
+  rpc ListRuntimeMigrations(UvmRuntimeMigrationListRequest) returns (UvmRuntimeMigrationListReply);
+  rpc GetRuntimeMigration(GetUvmRuntimeMigrationRequest) returns (UvmRuntimeMigrationReply);
+  rpc PreflightRuntimeMigration(UvmRuntimeMigrationPreflightRequest) returns (UvmRuntimeMigrationPreflightReply);
+  rpc StartRuntimeMigration(StartUvmRuntimeMigrationRequest) returns (UvmRuntimeMigrationReply);
+  rpc CommitRuntimeMigration(ResolveUvmRuntimeMigrationRequest) returns (UvmRuntimeMigrationReply);
+  rpc RollbackRuntimeMigration(ResolveUvmRuntimeMigrationRequest) returns (UvmRuntimeMigrationReply);
+  rpc FailRuntimeMigration(ResolveUvmRuntimeMigrationRequest) returns (UvmRuntimeMigrationReply);
+  rpc ListNodeOutboxMessages(UvmOutboxListRequest) returns (UvmOutboxListReply);
+  rpc GetNodeOutboxMessage(GetUvmOutboxMessageRequest) returns (UvmOutboxMessageReply);
+  rpc Reconcile(UvmReconciliationRequest) returns (UvmReconciliationReply);
+}

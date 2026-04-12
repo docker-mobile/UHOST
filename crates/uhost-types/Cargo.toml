@@ -1,0 +1,17 @@
+[package]
+name = "uhost-types"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Shared identifiers and data types for UHost"
+readme = "../README.md"
+repository = "https://github.com/5136-cloud/EXPERIMENT-UHOST"
+documentation = "https://github.com/5136-cloud/EXPERIMENT-UHOST/tree/main/docs"
+publish = false
+
+[dependencies]
+getrandom.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+time.workspace = true

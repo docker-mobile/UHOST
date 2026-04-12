@@ -1,0 +1,8 @@
+name = "governance_audit_chain"
+scope = "schema"
+from_version = 2
+to_version = 3
+checksum = "c25c1be6c75cddad6fce128799a95e1ff06996600faf271feafacff11c65cf74"
+
+[compatibility]
+window_days = 30

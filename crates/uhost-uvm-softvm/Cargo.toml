@@ -1,0 +1,13 @@
+[package]
+name = "uhost-uvm-softvm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+serde.workspace = true
+uhost-core = { path = "../uhost-core" }
+uhost-uvm = { path = "../uhost-uvm" }
+uhost-uvm-machine = { path = "../uhost-uvm-machine" }

@@ -1,0 +1,9 @@
+name = "observe_otlp_defaults"
+scope = "config"
+from_version = 1
+to_version = 2
+checksum = "19cd3cb320003da40958b681b735592a6d240c27684011b20a0c8b2c616622b5"
+
+[changes]
+add_signal_defaults = true
+default_retry_policy = "exponential_jitter"

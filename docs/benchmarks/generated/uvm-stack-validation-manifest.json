@@ -1,0 +1,141 @@
+{
+  "schema_version": 3,
+  "bundle": "wave3-core-generated-benchmark-evidence",
+  "generated_at": "2026-04-12 17:56:14.926392123 +00:00:00",
+  "generator": {
+    "script": "scripts/run-uvm-stack-validation.sh",
+    "script_sha256": "3180169dda8d1a000006e479e298f85b4bf67ba90d8ea8cbe2a188b959f8e8c7",
+    "command": "bash scripts/run-uvm-stack-validation.sh",
+    "steps": [
+      "cargo test -p uhost-uvm --lib",
+      "cargo run -p uhost-uvm --example uvm_validation_report -- host",
+      "cargo run -p uhost-uvm --example uvm_validation_report -- ubuntu",
+      "cargo run -p uhost-uvm --example uvm_validation_report -- apple",
+      "bash scripts/run-uvm-boot-witness.sh",
+      "bash scripts/run-uvm-native-guest-control.sh",
+      "bash scripts/run-qemu-tcg-boot-probe.sh"
+    ],
+    "optional_steps": [
+      {
+        "command": "bash scripts/run-qemu-tcg-cloudimg-guest-control.sh",
+        "activation_env": "UHOST_RUN_CLOUDIMG_GUEST_CONTROL",
+        "activation_value": "1",
+        "enabled": false
+      }
+    ],
+    "generated_directory": "docs/benchmarks/generated",
+    "directory_inventory": "exact_manifest_paths",
+    "optional_artifact_groups": [
+      {
+        "name": "qemu_tcg_cloudimg_guest_control",
+        "activation_env": "UHOST_RUN_CLOUDIMG_GUEST_CONTROL",
+        "activation_value": "1",
+        "enabled": false,
+        "candidate_artifacts": [
+          "docs/benchmarks/generated/qemu-tcg-cloudimg-guest-control.json",
+          "docs/benchmarks/generated/qemu-tcg-cloudimg-console.log",
+          "docs/benchmarks/generated/qemu-tcg-cloudimg-unixbench.log"
+        ],
+        "present_artifacts": []
+      }
+    ]
+  },
+  "verification": {
+    "focused_gate": {
+      "path": "ci/check-generated-benchmark-artifacts.sh",
+      "sha256": "d571e0fbef16567cbbb20feb0e60af15974e44b09ffebb6c86e2c042c1464ce7"
+    },
+    "wave3_evidence_test": {
+      "path": "cmd/uhostd/tests/wave3_evidence.rs",
+      "test_name": "wave3_generated_benchmark_artifacts_are_present_and_coherent",
+      "sha256": "e9c1621bb7accbee970afed575f3f6ff0e929fad2c966ea6aa0a0fd2340b91ee"
+    }
+  },
+  "artifacts": [
+    {
+      "path": "docs/benchmarks/generated/host-validation.md",
+      "kind": "validation_report",
+      "target": "host",
+      "generated_at": "2026-04-12 17:56:14.597881116 +00:00:00",
+      "sha256": "0d8e39ced8e93fc8ac3e2748591302ebb7ef9f020f020b0bcbce8098c7a3f953",
+      "evidence_class": "derived_summary",
+      "reference_coverage": "none",
+      "references": []
+    },
+    {
+      "path": "docs/benchmarks/generated/ubuntu-validation.md",
+      "kind": "validation_report",
+      "target": "ubuntu_22_04_vm",
+      "generated_at": "2026-04-12 17:56:14.756035797 +00:00:00",
+      "sha256": "e358e1a5c81c06ce6fd63afa36f564fb4a0b203cdc4f3187b204e636aec66fbc",
+      "evidence_class": "derived_summary",
+      "reference_coverage": "partial",
+      "references": [
+        "docs/benchmarks/generated/ubuntu-26.04-installer-boot-witness.json",
+        "docs/benchmarks/generated/ubuntu-26.04-disk-boot-witness.json",
+        "docs/benchmarks/generated/uvm-native-guest-control.json",
+        "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.raw.log",
+        "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.log",
+        "docs/benchmarks/generated/qemu-tcg-kernel-ubuntu-26.04-probe.log"
+      ]
+    },
+    {
+      "path": "docs/benchmarks/generated/apple-validation.md",
+      "kind": "validation_report",
+      "target": "apple_mac_studio_m1_pro_sim",
+      "generated_at": "2026-04-12 17:56:14.926392123 +00:00:00",
+      "sha256": "337b78c625d8a90684ee515559ecaaf7d2fc699c1a67931dc6e082782814efc0",
+      "evidence_class": "derived_summary",
+      "reference_coverage": "none",
+      "references": []
+    },
+    {
+      "path": "docs/benchmarks/generated/ubuntu-26.04-installer-boot-witness.json",
+      "kind": "boot_witness",
+      "evidence_class": "machine_verifiable",
+      "sha256": "97825f564342027b41953736a7bcc08c76e88bab025e9f0e6575296c9abe5050"
+    },
+    {
+      "path": "docs/benchmarks/generated/ubuntu-26.04-disk-boot-witness.json",
+      "kind": "boot_witness",
+      "evidence_class": "machine_verifiable",
+      "sha256": "4687dd9ca3150f55e73bca79926265474c5f32e0adcc05de75442b9a72ad0136"
+    },
+    {
+      "path": "docs/benchmarks/generated/uvm-native-guest-control.json",
+      "kind": "native_guest_control",
+      "evidence_class": "machine_verifiable",
+      "sha256": "57b3b882b50944f6c16d8e2b1c2c7d9d4941663c0948e95f94b495cec5787365"
+    },
+    {
+      "path": "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.json",
+      "kind": "qemu_probe_summary",
+      "evidence_class": "derived_summary",
+      "sha256": "610ea2eecd009264224e74fa4b030488ee065d7d7561751b6b97e10f8d40d229",
+      "reference_coverage": "complete",
+      "references": [
+        "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.raw.log",
+        "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.log",
+        "docs/benchmarks/generated/qemu-tcg-kernel-ubuntu-26.04-probe.log"
+      ]
+    },
+    {
+      "path": "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.raw.log",
+      "kind": "qemu_probe_raw_log",
+      "evidence_class": "machine_verifiable",
+      "sha256": "2cf3c5d31386853bb53c7679b60650cb3fd8325889e00851665c304feaba94d4"
+    },
+    {
+      "path": "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.log",
+      "kind": "qemu_probe_text_log",
+      "evidence_class": "machine_verifiable",
+      "sha256": "bbb1a6a1cbd7b591e166923912f5a3dffc86f8fdef57539a005846d77bd1f3ea"
+    },
+    {
+      "path": "docs/benchmarks/generated/qemu-tcg-kernel-ubuntu-26.04-probe.log",
+      "kind": "qemu_probe_kernel_log",
+      "evidence_class": "machine_verifiable",
+      "sha256": "83790f1ef726deb4f01e2b7c95019b07148d7674341e9d1c31ccf08d7ecb683f"
+    }
+  ]
+}

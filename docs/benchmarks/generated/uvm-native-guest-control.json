@@ -1,0 +1,3878 @@
+{
+  "backend": "software_dbt",
+  "boot_medium": "firmware",
+  "boot_path": "general_purpose",
+  "boot_stages": [
+    "native_executor:x86_64:ready",
+    "reset_vector:0x100000",
+    "firmware:uefi_standard:mapped",
+    "boot_device:disk:selected",
+    "firmware:dispatch_complete",
+    "primary_disk:handoff_complete",
+    "native_control:ready"
+  ],
+  "cdrom_image": null,
+  "console_trace": [
+    "Native executor mapped 1 preview artifacts and attached 1 block devices across 2 memory regions",
+    "Firmware uefi_standard dispatching from reset vector 0x100000",
+    "firmware uefi_standard dispatches from reset vector",
+    "Primary disk handoff reached guest userspace under native executor",
+    "native executor reached guest control handoff"
+  ],
+  "device_model": "virtio_balanced",
+  "disk_image": "/data/project/EXPERIMENT-UHOST/tmp/uvm-native-guest-control/ubuntu-nightly-root.raw",
+  "execution_class": "balanced",
+  "firmware_profile": "uefi_standard",
+  "guest_architecture": "x86_64",
+  "guest_control": {
+    "access": {
+      "egress_transport": "guest_owned_tcp_udp_http_https_nat_v1",
+      "guest_exec_route_available": false,
+      "guest_web_root": "/var/www",
+      "ingress_http_bind": null,
+      "ingress_http_ready": false,
+      "ingress_http_url": null,
+      "ingress_tcp_bind": null,
+      "ingress_tcp_ready": false,
+      "ingress_tcp_service": null,
+      "ingress_transport": "guest_owned_tcp_udp_http_nat_v1",
+      "ingress_udp_bind": null,
+      "ingress_udp_ready": false,
+      "ingress_udp_service": null,
+      "internet_nat": true,
+      "last_response": null,
+      "last_tcp_exchange": null,
+      "last_udp_exchange": null,
+      "network_mode": "guest_owned_usernet_nat",
+      "ssh_available": false,
+      "supported_guest_commands": [
+        "ip addr",
+        "ip route",
+        "hostname -I",
+        "resolvectl status",
+        "nslookup <hostname>",
+        "getent hosts <hostname>",
+        "curl <http-or-https-url>",
+        "curl -I <http-or-https-url>",
+        "fetch <http-or-https-url>",
+        "nc <host> <port>",
+        "nc -z <host> <port>",
+        "nc <host> <port> <payload>",
+        "nc -u <host> <port>",
+        "nc -zu <host> <port>",
+        "nc -u <host> <port> <payload>"
+      ]
+    },
+    "benchmark_runs": 1,
+    "command_channels": [
+      {
+        "delivery_path": "uart_console",
+        "last_command": "cat /proc/meminfo",
+        "last_exit_code": 0,
+        "name": "serial",
+        "rx_count": 10,
+        "state": "ready",
+        "tx_count": 10
+      },
+      {
+        "delivery_path": "virtio_console",
+        "last_command": null,
+        "last_exit_code": null,
+        "name": "virtio-console",
+        "rx_count": 0,
+        "state": "ready",
+        "tx_count": 0
+      },
+      {
+        "delivery_path": "guest_agent_rpc",
+        "last_command": null,
+        "last_exit_code": null,
+        "name": "guest-agent",
+        "rx_count": 0,
+        "state": "ready",
+        "tx_count": 0
+      }
+    ],
+    "commands": [
+      {
+        "channel": "serial",
+        "command": "echo benchmark-start > /var/tmp/workload-state",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": ""
+      },
+      {
+        "channel": "serial",
+        "command": "cat /var/tmp/workload-state",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "benchmark-start\n"
+      },
+      {
+        "channel": "serial",
+        "command": "ls /var/tmp",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "uhost-native-ready\nworkload-state\n"
+      },
+      {
+        "channel": "serial",
+        "command": "uname -a",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "Linux uvm-native-x86_64 0.1.0 #1 UVM PREEMPT_SOFT x86_64 GNU/Linux\n"
+      },
+      {
+        "channel": "serial",
+        "command": "systemctl is-system-running",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "running\n"
+      },
+      {
+        "channel": "serial",
+        "command": "cat /var/log/boot.log",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "Native executor mapped 1 preview artifacts and attached 1 block devices across 2 memory regions\nFirmware uefi_standard dispatching from reset vector 0x100000\nfirmware uefi_standard dispatches from reset vector\nPrimary disk handoff reached guest userspace under native executor\nnative executor reached guest control handoff\n"
+      },
+      {
+        "channel": "serial",
+        "command": "unixbench --summary",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "UVM Native UnixBench-style Summary\nMeasurement source: host_calibrated_partial (980e96f534b6-2026-04-08-22)\nSystem Benchmarks Index Values               BASELINE       RESULT    INDEX\nDhrystone 2 using register variables         116700.0    6786235.5    581.5\nDouble-Precision Whetstone                       55.0       1694.8    30.8\nExecl Throughput                                 43.0         126.1     29.3\nFile Copy 1024 bufsize 2000 maxblocks          3960.0      350167.0   884.3\n========\nSystem Benchmarks Index Score                                         1598.6\n"
+      },
+      {
+        "channel": "serial",
+        "command": "sha256sum /var/log/unixbench/latest.log",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "6a8483202792f1b669f87f7ad76d49b6fc5e20c3f9fe981bdff662a78d350a3d  /var/log/unixbench/latest.log\n"
+      },
+      {
+        "channel": "serial",
+        "command": "cat /var/log/unixbench/latest.log",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "UVM Native UnixBench-style Summary\nMeasurement source: host_calibrated_partial (980e96f534b6-2026-04-08-22)\nSystem Benchmarks Index Values               BASELINE       RESULT    INDEX\nDhrystone 2 using register variables         116700.0    6786235.5    581.5\nDouble-Precision Whetstone                       55.0       1694.8    30.8\nExecl Throughput                                 43.0         126.1     29.3\nFile Copy 1024 bufsize 2000 maxblocks          3960.0      350167.0   884.3\n========\nSystem Benchmarks Index Score                                         1598.6\n"
+      },
+      {
+        "channel": "serial",
+        "command": "cat /proc/meminfo",
+        "execution_semantics": "interpreted_guest_isa_v0",
+        "exit_code": 0,
+        "instruction_count": 7,
+        "stderr": "",
+        "stdout": "MemTotal:       4194304 kB\nMemAvailable:   3670016 kB\n"
+      }
+    ],
+    "compatibility_projection": {
+      "file_count": 152,
+      "mode": "legacy_file_projection"
+    },
+    "cwd": "/",
+    "guest_memory_backed": true,
+    "history_len": 10,
+    "hostname": "uvm-native-x86_64",
+    "ready_marker_path": "/var/tmp/uhost-native-ready",
+    "service_states": [
+      {
+        "name": "init",
+        "state": "running"
+      },
+      {
+        "name": "usernet",
+        "state": "running"
+      },
+      {
+        "name": "guest-control",
+        "state": "running"
+      },
+      {
+        "name": "egress-relay",
+        "state": "running"
+      },
+      {
+        "name": "tcp-egress-relay",
+        "state": "running"
+      },
+      {
+        "name": "udp-egress-relay",
+        "state": "running"
+      },
+      {
+        "name": "dns-relay",
+        "state": "running"
+      },
+      {
+        "name": "ingress-relay",
+        "state": "running"
+      },
+      {
+        "name": "tcp-ingress-relay",
+        "state": "running"
+      },
+      {
+        "name": "udp-ingress-relay",
+        "state": "running"
+      },
+      {
+        "name": "cloud-init",
+        "state": "running"
+      }
+    ],
+    "virtual_file_residency": [
+      {
+        "content_fingerprint": "a48a68cb366be7a55ac5d5422d35d8fcd3ff4a78c549c220dd638d696e74d027",
+        "path": "/etc/hostname",
+        "resident_byte_len": 18,
+        "resident_guest_address": 67108864
+      },
+      {
+        "content_fingerprint": "91d2131fd03115fec3a01459f38515e04add7acccdf97cb6e95e6cb1eda93fb4",
+        "path": "/etc/os-release",
+        "resident_byte_len": 71,
+        "resident_guest_address": 67109376
+      },
+      {
+        "content_fingerprint": "930b176368951ccce1f7c46f4dface0c26f83c05c3ed7260e2934499f465c954",
+        "path": "/etc/resolv.conf",
+        "resident_byte_len": 95,
+        "resident_guest_address": 67114752
+      },
+      {
+        "content_fingerprint": "a2f6193a77440fa2571904379f24932072b1e2c8610d6a549764d2da19a1d9cd",
+        "path": "/proc/meminfo",
+        "resident_byte_len": 54,
+        "resident_guest_address": 67109888
+      },
+      {
+        "content_fingerprint": "fdc31dfbb14afa96276a35e63ada5ec3a8217feff799505c5277d58ef13184f0",
+        "path": "/proc/net/dev",
+        "resident_byte_len": 444,
+        "resident_guest_address": 67146752
+      },
+      {
+        "content_fingerprint": "63fbf9b6218eb510342ef50832c0f429d33409e6fbc7e6a3971fd5d256d50037",
+        "path": "/proc/net/route",
+        "resident_byte_len": 171,
+        "resident_guest_address": 67147264
+      },
+      {
+        "content_fingerprint": "1af817f53c70a698adcc85bd8b274ca892612653994535368087f310e45190f4",
+        "path": "/proc/sys/kernel/uname",
+        "resident_byte_len": 67,
+        "resident_guest_address": 67109632
+      },
+      {
+        "content_fingerprint": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "path": "/run/guest-egress/last-body-bytes",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67116288
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-egress/last-content-type",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67116032
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-egress/last-method",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67115520
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-egress/last-status-line",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67115776
+      },
+      {
+        "content_fingerprint": "2ed27c1421e6928dbe13dbfdb5c59e1045b30341fe7ebe05700006bc5ac572c0",
+        "path": "/run/guest-egress/last-truncated",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67116544
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-egress/last-url",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67115264
+      },
+      {
+        "content_fingerprint": "299f9778125a9b7fe634c96e16a4d8c254fa34a5c98bfee79674f28165976242",
+        "path": "/run/guest-egress/transport",
+        "resident_byte_len": 38,
+        "resident_guest_address": 67115008
+      },
+      {
+        "content_fingerprint": "f133ace7503b6cd8660b5fa9a5d673aa8bdd020fb906a6fd90deea073d65a6f4",
+        "path": "/run/guest-index/dir/_root.ls",
+        "resident_byte_len": 17,
+        "resident_guest_address": 67243776
+      },
+      {
+        "content_fingerprint": "f57a230b2ac83b7b6e03d3f0073013b5328999b0298825c378c8a0e1a718b5fc",
+        "path": "/run/guest-index/dir/proc.ls",
+        "resident_byte_len": 16,
+        "resident_guest_address": 67153920
+      },
+      {
+        "content_fingerprint": "24821e10c82d1136050a8bf17ff4c55b96da28e65e9f94299332138e734f8f79",
+        "path": "/run/guest-index/dir/proc__net.ls",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67154176
+      },
+      {
+        "content_fingerprint": "9c5955fc99a60b8f6dee6cf582c4420d91e1b3e2a201f532c91e2cbdfce7fa51",
+        "path": "/run/guest-index/dir/proc__net__dev.ls",
+        "resident_byte_len": 4,
+        "resident_guest_address": 67148800
+      },
+      {
+        "content_fingerprint": "14efb72cccd6d3b17ec0d8f85d1283e032ccd2112efa329dfc50a0dcbc1f10e5",
+        "path": "/run/guest-index/dir/proc__net__route.ls",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67149312
+      },
+      {
+        "content_fingerprint": "b39e2baffe77553698f98bbf90039634f1de619e5f1bafa1bdc64678da1e3733",
+        "path": "/run/guest-index/dir/run.ls",
+        "resident_byte_len": 113,
+        "resident_guest_address": 67244032
+      },
+      {
+        "content_fingerprint": "c1674eaec165c384050771b225d4b6736e93e503b619704f3aaf79846b253a95",
+        "path": "/run/guest-index/dir/run__guest-kernel.ls",
+        "resident_byte_len": 34,
+        "resident_guest_address": 67244288
+      },
+      {
+        "content_fingerprint": "1c34a884cfbbdd5b01d504bc8145fea807d4f601b76ed669cb3ef898932a8ab8",
+        "path": "/run/guest-index/dir/run__guest-kernel__exit-code.ls",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67241984
+      },
+      {
+        "content_fingerprint": "9cc82df73ee18c7a6f7bf5dd85ea969c16c8f856d974a33bc06aaf7d149537af",
+        "path": "/run/guest-index/dir/run__guest-kernel__operation.ls",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67242496
+      },
+      {
+        "content_fingerprint": "7504e56084878aa08c6a279b2a6eedefbf82bccb8d58cd152f23dcbad3ff1407",
+        "path": "/run/guest-index/dir/run__guest-kernel__stderr.ls",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67243008
+      },
+      {
+        "content_fingerprint": "44c79ad26e0b9689b7d040d1ab978faab2eedbbb26a58dd68122090c3c6d3ab3",
+        "path": "/run/guest-index/dir/run__guest-kernel__stdout.ls",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67243520
+      },
+      {
+        "content_fingerprint": "c270efd550830c1c147ee2ddfe7c6e5ba3c89066112594f3aa325b4a6985a759",
+        "path": "/run/guest-index/dir/run__guest-network.ls",
+        "resident_byte_len": 123,
+        "resident_guest_address": 67154688
+      },
+      {
+        "content_fingerprint": "c31171e20309dd09a7516f689aefaaabe3ad7a4fd5136bd85ceaf9459c254a1e",
+        "path": "/run/guest-index/dir/run__guest-network__hostname-i.ls",
+        "resident_byte_len": 11,
+        "resident_guest_address": 67149824
+      },
+      {
+        "content_fingerprint": "c4dc052d5a9f2d75e0f504a40b4b991cbeaf1033bc27a69e561ef05100aaec82",
+        "path": "/run/guest-index/dir/run__guest-network__ip-addr.ls",
+        "resident_byte_len": 8,
+        "resident_guest_address": 67150336
+      },
+      {
+        "content_fingerprint": "31af82a1039ddc82389568918dc5c9b53ce631c53d041bc534c4c6ee169e9d0b",
+        "path": "/run/guest-index/dir/run__guest-network__ip-route.ls",
+        "resident_byte_len": 9,
+        "resident_guest_address": 67150848
+      },
+      {
+        "content_fingerprint": "4edad44147b85fac34aaf6f9220ff16cff2ea6278d247c1dbc6da405d851b277",
+        "path": "/run/guest-index/dir/run__guest-network__port-forwards.ls",
+        "resident_byte_len": 8,
+        "resident_guest_address": 67154944
+      },
+      {
+        "content_fingerprint": "d155b4425d6984ff819d901a0f51c21b0b9a8b5b3e10811f780a35f412453a2b",
+        "path": "/run/guest-index/dir/run__guest-network__port-forwards__tcp.ls",
+        "resident_byte_len": 4,
+        "resident_guest_address": 67151360
+      },
+      {
+        "content_fingerprint": "c85501e804946c84740cbcafed571d6d81b006680ab3f436136d8b99ecef8bcd",
+        "path": "/run/guest-index/dir/run__guest-network__port-forwards__udp.ls",
+        "resident_byte_len": 4,
+        "resident_guest_address": 67151872
+      },
+      {
+        "content_fingerprint": "d21d2816dd66a4f12bc5c37b9775b8caac995abbb778e5e4360bcc50947b4360",
+        "path": "/run/guest-index/dir/run__guest-network__resolvectl-status.ls",
+        "resident_byte_len": 18,
+        "resident_guest_address": 67152384
+      },
+      {
+        "content_fingerprint": "8b9537931df5af9138999a924be415429376e6f0cefbc93fa6df3e4198a32c82",
+        "path": "/run/guest-index/dir/run__guest-network__ss-ltn.ls",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67152896
+      },
+      {
+        "content_fingerprint": "230ec7dddb158a7cb1a7168982d496bc9c12656d2b5bb2433bef6ed063fc5db3",
+        "path": "/run/guest-index/dir/run__guest-network__ss-lun.ls",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67153408
+      },
+      {
+        "content_fingerprint": "c83822d0c40df333e159ca398e7411c5e4e06fc6384afd56847cb6952988bd79",
+        "path": "/run/guest-index/dir/var.ls",
+        "resident_byte_len": 16,
+        "resident_guest_address": 67214080
+      },
+      {
+        "content_fingerprint": "175f763106b31f9679bd7501e969c86e91de21efd423d05c20c5e90b86c70ba6",
+        "path": "/run/guest-index/dir/var__lib.ls",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67209728
+      },
+      {
+        "content_fingerprint": "fd6970c361965cc4f736559a37c1e24c107810fe57a6cc7b5f7c50ec80045cfb",
+        "path": "/run/guest-index/dir/var__lib__unixbench.ls",
+        "resident_byte_len": 8,
+        "resident_guest_address": 67209984
+      },
+      {
+        "content_fingerprint": "853e875f678caaaf0fc0977517a9a9f8ccf06a8db2b363b6927c94565b780c40",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics.ls",
+        "resident_byte_len": 56,
+        "resident_guest_address": 67210240
+      },
+      {
+        "content_fingerprint": "4d00967e353d87ca937a76b4b1dafe6a72fd872e4f8370534972ec111cb86c0e",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__copy.ls",
+        "resident_byte_len": 5,
+        "resident_guest_address": 67205888
+      },
+      {
+        "content_fingerprint": "a079f4cd8533348b75bbad7a46f3af4d413642750c11595b43a1f0e848d36b95",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__dhrystone.ls",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67206400
+      },
+      {
+        "content_fingerprint": "f51eef1ff20fdc506d02ce721d5361afee10ca29d0a4021e36c33346a2c932bb",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__execl.ls",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67206912
+      },
+      {
+        "content_fingerprint": "f816b480f87144ec4de5862adf028ff66cc6964250325d53fd22bf8922824b6f",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__index.ls",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67207424
+      },
+      {
+        "content_fingerprint": "b8bb034f9b63bd0254fbc7c157cae746c75853f4643d6cea844dc48ddb57f522",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__source.ls",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67207936
+      },
+      {
+        "content_fingerprint": "c35f01bdeb74ff3217c153d4bd1e6b1618962922bf212bca35cd51bc2209a1d2",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__source_path.ls",
+        "resident_byte_len": 12,
+        "resident_guest_address": 67208448
+      },
+      {
+        "content_fingerprint": "28bdf03dd148a76bb9d0557e7860a9c22e311903a6999d988077879fea8b77a6",
+        "path": "/run/guest-index/dir/var__lib__unixbench__metrics__whetstone.ls",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67208960
+      },
+      {
+        "content_fingerprint": "94ac3dfa4becfb8b452ef3f0896a977231ef6365dc3cdafccf63facdc35d1621",
+        "path": "/run/guest-index/dir/var__log.ls",
+        "resident_byte_len": 52,
+        "resident_guest_address": 67214336
+      },
+      {
+        "content_fingerprint": "58d68954620aef0794d1fe4e2b2209b4a358950a336a4173f75254306b542611",
+        "path": "/run/guest-index/dir/var__log__unixbench.ls",
+        "resident_byte_len": 24,
+        "resident_guest_address": 67214592
+      },
+      {
+        "content_fingerprint": "632086452dabec72040dd91a648a464f650823e514432292fbf191142f386835",
+        "path": "/run/guest-index/dir/var__log__unixbench__latest.log.ls",
+        "resident_byte_len": 11,
+        "resident_guest_address": 67212544
+      },
+      {
+        "content_fingerprint": "1b0ba12fb10f33b0c4c41fa0967278b942b40554044129ff2760e3b62cbb73b0",
+        "path": "/run/guest-index/dir/var__log__unixbench__run-0001.log.ls",
+        "resident_byte_len": 13,
+        "resident_guest_address": 67213056
+      },
+      {
+        "content_fingerprint": "85a2f86ca85ad1653c545e8bd9b52007132b07f716d0896fe2ad41983241f81f",
+        "path": "/run/guest-index/dir/var__tmp.ls",
+        "resident_byte_len": 50,
+        "resident_guest_address": 67214848
+      },
+      {
+        "content_fingerprint": "5be205b2ac7c7f39bdef9fe05a368f923dab6342fd9e5d039040769f97d6586a",
+        "path": "/run/guest-index/dir/var__tmp__unixbench-score.ls",
+        "resident_byte_len": 16,
+        "resident_guest_address": 67213568
+      },
+      {
+        "content_fingerprint": "5eb9df5ce850bccfee7b23a7ee90a3d6f5cd295ca4628dc3d745c6d58e51fa56",
+        "path": "/run/guest-index/dir/var__tmp__workload-state.ls",
+        "resident_byte_len": 15,
+        "resident_guest_address": 67144192
+      },
+      {
+        "content_fingerprint": "f45a7c09c0f5c3ea29992f35116eb7db94e2b8a54d2c34d6b8fc5bcecc629940",
+        "path": "/run/guest-index/sha256/proc__net__dev.txt",
+        "resident_byte_len": 80,
+        "resident_guest_address": 67148544
+      },
+      {
+        "content_fingerprint": "b8fc19752521d50779d19a0cf19033316c29055798b1357c10ef9f6267330b54",
+        "path": "/run/guest-index/sha256/proc__net__route.txt",
+        "resident_byte_len": 82,
+        "resident_guest_address": 67149056
+      },
+      {
+        "content_fingerprint": "f4c0bea04bca361342e07a26273f57bae72118ab4278e7ae03a21cd5653e227f",
+        "path": "/run/guest-index/sha256/run__guest-kernel__exit-code.txt",
+        "resident_byte_len": 94,
+        "resident_guest_address": 67241728
+      },
+      {
+        "content_fingerprint": "c6bdfacc0a4df559f40f216aee0b4785834a3ec75d02e53f43654df8fce1b7f1",
+        "path": "/run/guest-index/sha256/run__guest-kernel__operation.txt",
+        "resident_byte_len": 94,
+        "resident_guest_address": 67242240
+      },
+      {
+        "content_fingerprint": "e9b9f1c3655b6aaab9e277cd6e74f5905b2c67873395878558edd189055a98f7",
+        "path": "/run/guest-index/sha256/run__guest-kernel__stderr.txt",
+        "resident_byte_len": 91,
+        "resident_guest_address": 67242752
+      },
+      {
+        "content_fingerprint": "ed10f83ae6c13cf08b182f6c0320be37215e98bcae190346431dda2befe910b0",
+        "path": "/run/guest-index/sha256/run__guest-kernel__stdout.txt",
+        "resident_byte_len": 91,
+        "resident_guest_address": 67243264
+      },
+      {
+        "content_fingerprint": "b04e059331d9da3c43d824de2b7723021b43a59e903db7bde52f6edee732b918",
+        "path": "/run/guest-index/sha256/run__guest-network__hostname-i.txt",
+        "resident_byte_len": 96,
+        "resident_guest_address": 67149568
+      },
+      {
+        "content_fingerprint": "f5013c663f190661874e6d08d31a193c7c4c95ed4b093ef36171026dd8016b7e",
+        "path": "/run/guest-index/sha256/run__guest-network__ip-addr.txt",
+        "resident_byte_len": 93,
+        "resident_guest_address": 67150080
+      },
+      {
+        "content_fingerprint": "b0a738c66321273a8b23ea8cb61f00842beb12a599c08207efa1decb70409e31",
+        "path": "/run/guest-index/sha256/run__guest-network__ip-route.txt",
+        "resident_byte_len": 94,
+        "resident_guest_address": 67150592
+      },
+      {
+        "content_fingerprint": "b304474387af059dd6128cb409ee62c68de31debd8ded49e7741d917059b9501",
+        "path": "/run/guest-index/sha256/run__guest-network__port-forwards__tcp.txt",
+        "resident_byte_len": 103,
+        "resident_guest_address": 67151104
+      },
+      {
+        "content_fingerprint": "cbc3acbba31b74fd11d93293d1d15969d43a4809a5cf1102e3587a10c01bfdbc",
+        "path": "/run/guest-index/sha256/run__guest-network__port-forwards__udp.txt",
+        "resident_byte_len": 103,
+        "resident_guest_address": 67151616
+      },
+      {
+        "content_fingerprint": "c529ddcaf413ccc98473686474d8826b4d534d8451b0b3e830822a27438213db",
+        "path": "/run/guest-index/sha256/run__guest-network__resolvectl-status.txt",
+        "resident_byte_len": 103,
+        "resident_guest_address": 67152128
+      },
+      {
+        "content_fingerprint": "07c1a6783f77aa22b3cf6681fc2432a8612099d2416422e2e62a702ab75fcba7",
+        "path": "/run/guest-index/sha256/run__guest-network__ss-ltn.txt",
+        "resident_byte_len": 92,
+        "resident_guest_address": 67152640
+      },
+      {
+        "content_fingerprint": "88e69dc0d418dc7255f49cb05a70d0b06075e01dd289141350b030719cc3eda5",
+        "path": "/run/guest-index/sha256/run__guest-network__ss-lun.txt",
+        "resident_byte_len": 92,
+        "resident_guest_address": 67153152
+      },
+      {
+        "content_fingerprint": "a6d14c5a4ea854e5a64c83bee836b835a3f2972ef3bcb503a56894b42f88e6ab",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__copy.txt",
+        "resident_byte_len": 98,
+        "resident_guest_address": 67205632
+      },
+      {
+        "content_fingerprint": "890986f7d6716e96ef1cce5e9abcf7c8d049b5613ce168cf6a1d88e763c3d00c",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__dhrystone.txt",
+        "resident_byte_len": 103,
+        "resident_guest_address": 67206144
+      },
+      {
+        "content_fingerprint": "6681631beed573b6cdfb44aae400d9efd395e1481dd5eb82c5e4688c1328c569",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__execl.txt",
+        "resident_byte_len": 99,
+        "resident_guest_address": 67206656
+      },
+      {
+        "content_fingerprint": "38f119b46060108d5bf42b0489b4ea3b4583a6095e43d8e5357fda623e09beec",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__index.txt",
+        "resident_byte_len": 99,
+        "resident_guest_address": 67207168
+      },
+      {
+        "content_fingerprint": "ba99d6dcc99646aae85872f86a52d961f96839bb72755346309c775446c81388",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__source.txt",
+        "resident_byte_len": 100,
+        "resident_guest_address": 67207680
+      },
+      {
+        "content_fingerprint": "1d2b9e8143ade2b71af0d1bbfdf10788a3f3ac4e8e909a0de192a2fa35c70273",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__source_path.txt",
+        "resident_byte_len": 105,
+        "resident_guest_address": 67208192
+      },
+      {
+        "content_fingerprint": "0f9bcecb3201cc93fb3054f3ee8580fa759e41eac0ae5452392bab2e37066670",
+        "path": "/run/guest-index/sha256/var__lib__unixbench__metrics__whetstone.txt",
+        "resident_byte_len": 103,
+        "resident_guest_address": 67208704
+      },
+      {
+        "content_fingerprint": "02d35033adce9fbe227940b52ebda911f405200562296dbcb1bfeddf998a2357",
+        "path": "/run/guest-index/sha256/var__log__unixbench__latest.log.txt",
+        "resident_byte_len": 96,
+        "resident_guest_address": 67212288
+      },
+      {
+        "content_fingerprint": "f95c4c6d5eea60eb4cfedcef31c2a3aacfee98bcf5a3397a632ad55e30275b84",
+        "path": "/run/guest-index/sha256/var__log__unixbench__run-0001.log.txt",
+        "resident_byte_len": 98,
+        "resident_guest_address": 67212800
+      },
+      {
+        "content_fingerprint": "3c2a5419ea839277180e95f5ab2c86edbafe04bdf958bc43cb6d5adfca821584",
+        "path": "/run/guest-index/sha256/var__tmp__unixbench-score.txt",
+        "resident_byte_len": 91,
+        "resident_guest_address": 67213312
+      },
+      {
+        "content_fingerprint": "75d13033d779ae1fdfc6d88fc147aeea68f10048c9606408363fb798fc597118",
+        "path": "/run/guest-index/sha256/var__tmp__workload-state.txt",
+        "resident_byte_len": 90,
+        "resident_guest_address": 67143936
+      },
+      {
+        "content_fingerprint": "f465c3739385890c221dff1a05e578c6cae0d0430e46996d319db7439f884336",
+        "path": "/run/guest-ingress/default-route",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67121408
+      },
+      {
+        "content_fingerprint": "01666ec060466c14b9fa06c613fbac449163f2a2017558fe16526209ab78c6b0",
+        "path": "/run/guest-ingress/tcp/default-service",
+        "resident_byte_len": 8,
+        "resident_guest_address": 67121664
+      },
+      {
+        "content_fingerprint": "4e51a7996c6a4bfc0ac6c9714072aa0f8711bf66e4cd3408cc26c5d728300eea",
+        "path": "/run/guest-ingress/tcp/services/default/banner",
+        "resident_byte_len": 32,
+        "resident_guest_address": 67122432
+      },
+      {
+        "content_fingerprint": "edec4ff3654a3d24b13144e0279332473b60c40788d46b9d0201b9049af7e895",
+        "path": "/run/guest-ingress/tcp/services/default/bind",
+        "resident_byte_len": 12,
+        "resident_guest_address": 67121920
+      },
+      {
+        "content_fingerprint": "86b0c5a1e2b73b08fd54c727f4458649ed9fe3ad1b6e8ac9460c070113509a1e",
+        "path": "/run/guest-ingress/tcp/services/default/mode",
+        "resident_byte_len": 5,
+        "resident_guest_address": 67122176
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-ingress/tcp/services/default/response",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67122688
+      },
+      {
+        "content_fingerprint": "4572c291d12daa53f5f4e1fa8732f7beca2b852ca8a6d7c8dde8094a690a4b9e",
+        "path": "/run/guest-ingress/transport",
+        "resident_byte_len": 32,
+        "resident_guest_address": 67120896
+      },
+      {
+        "content_fingerprint": "01666ec060466c14b9fa06c613fbac449163f2a2017558fe16526209ab78c6b0",
+        "path": "/run/guest-ingress/udp/default-service",
+        "resident_byte_len": 8,
+        "resident_guest_address": 67122944
+      },
+      {
+        "content_fingerprint": "edec4ff3654a3d24b13144e0279332473b60c40788d46b9d0201b9049af7e895",
+        "path": "/run/guest-ingress/udp/services/default/bind",
+        "resident_byte_len": 12,
+        "resident_guest_address": 67123200
+      },
+      {
+        "content_fingerprint": "86b0c5a1e2b73b08fd54c727f4458649ed9fe3ad1b6e8ac9460c070113509a1e",
+        "path": "/run/guest-ingress/udp/services/default/mode",
+        "resident_byte_len": 5,
+        "resident_guest_address": 67123456
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-ingress/udp/services/default/response",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67123712
+      },
+      {
+        "content_fingerprint": "723c24170e34978cf294ed635fddfb6233126802818d3d5b2bbfe24fb7ea38e9",
+        "path": "/run/guest-ingress/web-root",
+        "resident_byte_len": 9,
+        "resident_guest_address": 67121152
+      },
+      {
+        "content_fingerprint": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "path": "/run/guest-kernel/exit-code",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67241472
+      },
+      {
+        "content_fingerprint": "807213a2645534a23e781037476ee0e35968ebf5ad39e535c8d68491e0db5daa",
+        "path": "/run/guest-kernel/operation",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67240704
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-kernel/stderr",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67241216
+      },
+      {
+        "content_fingerprint": "a2f6193a77440fa2571904379f24932072b1e2c8610d6a549764d2da19a1d9cd",
+        "path": "/run/guest-kernel/stdout",
+        "resident_byte_len": 54,
+        "resident_guest_address": 67240960
+      },
+      {
+        "content_fingerprint": "5350dce9a69e886814362bd71ffb3c1bbe3b4bbcba08be9f80bee641fb4e6861",
+        "path": "/run/guest-network/dns",
+        "resident_byte_len": 9,
+        "resident_guest_address": 67114496
+      },
+      {
+        "content_fingerprint": "71045576a4bc862586419bc02f792653bfc6a89e154e1ff8decc777a2c4e3e60",
+        "path": "/run/guest-network/gateway",
+        "resident_byte_len": 9,
+        "resident_guest_address": 67114240
+      },
+      {
+        "content_fingerprint": "52828909425ef98daece87a1abd60cb9495bdaf4a7a8195ffe71264de8d09205",
+        "path": "/run/guest-network/guest-cidr",
+        "resident_byte_len": 13,
+        "resident_guest_address": 67113984
+      },
+      {
+        "content_fingerprint": "1288954b8ce4328f597c16c39a4493f0278808e398595e12ec2a089b76614ccc",
+        "path": "/run/guest-network/guest-ipv4",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67113728
+      },
+      {
+        "content_fingerprint": "1288954b8ce4328f597c16c39a4493f0278808e398595e12ec2a089b76614ccc",
+        "path": "/run/guest-network/hostname-i",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67145984
+      },
+      {
+        "content_fingerprint": "cf9519d27d624823996bd138767fc5f0eb4c8737fd0cad90895c9ccfb93a1e4d",
+        "path": "/run/guest-network/interface",
+        "resident_byte_len": 5,
+        "resident_guest_address": 67113472
+      },
+      {
+        "content_fingerprint": "0ab7598981a94df6c0bdef81773ad674a1e71d73fd7c9f39d25f164fb47d80a4",
+        "path": "/run/guest-network/ip-addr",
+        "resident_byte_len": 270,
+        "resident_guest_address": 67145216
+      },
+      {
+        "content_fingerprint": "248d6e3fc4c4ff5804b7bbb714ea6bf3c511a50d7c275372a1e3be223fad96a8",
+        "path": "/run/guest-network/ip-route",
+        "resident_byte_len": 89,
+        "resident_guest_address": 67145728
+      },
+      {
+        "content_fingerprint": "cd558b7145354cf9353c19025a957aee86856d4dc4197dd1972ee44ad49f2884",
+        "path": "/run/guest-network/mode",
+        "resident_byte_len": 24,
+        "resident_guest_address": 67113216
+      },
+      {
+        "content_fingerprint": "bf4462fd6cc82f0eab232c2ab2a32e5a8c9c648d043c879405d7ecb371161ad2",
+        "path": "/run/guest-network/port-forwards/tcp",
+        "resident_byte_len": 29,
+        "resident_guest_address": 67148032
+      },
+      {
+        "content_fingerprint": "cb2f49c27afd8bee545ea2e67616abec93536bd9be576f98d60c607abf6f9590",
+        "path": "/run/guest-network/port-forwards/udp",
+        "resident_byte_len": 29,
+        "resident_guest_address": 67148288
+      },
+      {
+        "content_fingerprint": "f8a28a2c44734c51ff7332d15804c4c6f53131f4c633af438aee2e10418394c4",
+        "path": "/run/guest-network/resolvectl-status",
+        "resident_byte_len": 365,
+        "resident_guest_address": 67146240
+      },
+      {
+        "content_fingerprint": "c0dba88af6f309d654cd0b4bc094597c7755d1461892d73cb485946598eedadf",
+        "path": "/run/guest-network/ss-ltn",
+        "resident_byte_len": 152,
+        "resident_guest_address": 67147520
+      },
+      {
+        "content_fingerprint": "5ceb144e8bb215476b3d064133fd1b7d1c1e80015b19bd0e67accd5bba70b49e",
+        "path": "/run/guest-network/ss-lun",
+        "resident_byte_len": 152,
+        "resident_guest_address": 67147776
+      },
+      {
+        "content_fingerprint": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "path": "/run/guest-tcp/last-bytes-received",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67118336
+      },
+      {
+        "content_fingerprint": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "path": "/run/guest-tcp/last-bytes-sent",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67118080
+      },
+      {
+        "content_fingerprint": "2ed27c1421e6928dbe13dbfdb5c59e1045b30341fe7ebe05700006bc5ac572c0",
+        "path": "/run/guest-tcp/last-probe",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67117824
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-tcp/last-target",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67117568
+      },
+      {
+        "content_fingerprint": "299f9778125a9b7fe634c96e16a4d8c254fa34a5c98bfee79674f28165976242",
+        "path": "/run/guest-tcp/transport",
+        "resident_byte_len": 38,
+        "resident_guest_address": 67117312
+      },
+      {
+        "content_fingerprint": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "path": "/run/guest-udp/last-bytes-received",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67120128
+      },
+      {
+        "content_fingerprint": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+        "path": "/run/guest-udp/last-bytes-sent",
+        "resident_byte_len": 2,
+        "resident_guest_address": 67119872
+      },
+      {
+        "content_fingerprint": "2ed27c1421e6928dbe13dbfdb5c59e1045b30341fe7ebe05700006bc5ac572c0",
+        "path": "/run/guest-udp/last-probe",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67119616
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/run/guest-udp/last-target",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67119360
+      },
+      {
+        "content_fingerprint": "299f9778125a9b7fe634c96e16a4d8c254fa34a5c98bfee79674f28165976242",
+        "path": "/run/guest-udp/transport",
+        "resident_byte_len": 38,
+        "resident_guest_address": 67119104
+      },
+      {
+        "content_fingerprint": "a4ecc5c87d811bbff7a118c17ef8cf83318cb623a103c15b8549089aa2a7f0ac",
+        "path": "/run/system-state",
+        "resident_byte_len": 8,
+        "resident_guest_address": 67110144
+      },
+      {
+        "content_fingerprint": "aa74461e0ff673828b821ac2762ae88b28866d6c6f2ee8eb455aa92b471bdbd0",
+        "path": "/run/systemd/services/cloud-init.status",
+        "resident_byte_len": 129,
+        "resident_guest_address": 67128832
+      },
+      {
+        "content_fingerprint": "266593bf65ec1240486089b2b12036027f6849332a57841518d60682c2f25fdf",
+        "path": "/run/systemd/services/dns-relay.status",
+        "resident_byte_len": 127,
+        "resident_guest_address": 67127808
+      },
+      {
+        "content_fingerprint": "c53b55069835acf95a825ba32a17addd0e0929f150b213f618fdc8e011c6fa05",
+        "path": "/run/systemd/services/egress-relay.status",
+        "resident_byte_len": 133,
+        "resident_guest_address": 67127040
+      },
+      {
+        "content_fingerprint": "3bd728e9bf8e99ef2639788bb5a87060fb18bdbb77c0226ceb889e1b8336e13d",
+        "path": "/run/systemd/services/guest-control.status",
+        "resident_byte_len": 135,
+        "resident_guest_address": 67126784
+      },
+      {
+        "content_fingerprint": "8ced726fc53fdd3fe626bf5e862a8618305d635957c02d8a18a13d801df8fc1e",
+        "path": "/run/systemd/services/ingress-relay.status",
+        "resident_byte_len": 135,
+        "resident_guest_address": 67128064
+      },
+      {
+        "content_fingerprint": "342838a61e96be53fb1071c35e60a9b0c319a04987975a35d612aae4c1668fb6",
+        "path": "/run/systemd/services/init.status",
+        "resident_byte_len": 117,
+        "resident_guest_address": 67126272
+      },
+      {
+        "content_fingerprint": "58c2b156200ddecf18a6c54f40a46bf4b205bbb10298f5019f4140e4dc7229bc",
+        "path": "/run/systemd/services/tcp-egress-relay.status",
+        "resident_byte_len": 141,
+        "resident_guest_address": 67127296
+      },
+      {
+        "content_fingerprint": "33f59d810c21ce2018b9c96261b0592ab23fe72f0a8930756db963b6a3b167ae",
+        "path": "/run/systemd/services/tcp-ingress-relay.status",
+        "resident_byte_len": 143,
+        "resident_guest_address": 67128320
+      },
+      {
+        "content_fingerprint": "5d40961b8fdf14473a70fbc09c72cd757ff8b4bbb95013e651d95a8db6a80447",
+        "path": "/run/systemd/services/udp-egress-relay.status",
+        "resident_byte_len": 141,
+        "resident_guest_address": 67127552
+      },
+      {
+        "content_fingerprint": "b02c3e367fa981c4e9af41c8fb0f48b4d71c5240ba762972baa4bd2d94d5c280",
+        "path": "/run/systemd/services/udp-ingress-relay.status",
+        "resident_byte_len": 143,
+        "resident_guest_address": 67128576
+      },
+      {
+        "content_fingerprint": "89e5e3dae8030fce5462e69e7f7f18f82781e500b4774a109f8ea101050c6b90",
+        "path": "/run/systemd/services/usernet.status",
+        "resident_byte_len": 123,
+        "resident_guest_address": 67126528
+      },
+      {
+        "content_fingerprint": "b5ea375becd3088862c16fc97fe379532c583079829fcf1fdcb549e6808262fb",
+        "path": "/run/uhost/secure-boot/state",
+        "resident_byte_len": 9,
+        "resident_guest_address": 67126016
+      },
+      {
+        "content_fingerprint": "3ed8116a2627c3aa651411ebc27d802027e82e4ce15aefa78353289f943f2f3a",
+        "path": "/var/lib/unixbench/metrics/copy",
+        "resident_byte_len": 9,
+        "resident_guest_address": 67204608
+      },
+      {
+        "content_fingerprint": "d2fce4acc701fb248d2d1f7e8c764c5c48dc83fd69272dc7c260c270430a7319",
+        "path": "/var/lib/unixbench/metrics/dhrystone",
+        "resident_byte_len": 10,
+        "resident_guest_address": 67203840
+      },
+      {
+        "content_fingerprint": "2ae5dbefc156f2670b74b6d5cf5eda0e1f71099053fa7cadd6727f7c4997c0c3",
+        "path": "/var/lib/unixbench/metrics/execl",
+        "resident_byte_len": 6,
+        "resident_guest_address": 67204352
+      },
+      {
+        "content_fingerprint": "0beaf49677dac35029fbac6f436c4351c599e4e2ccbfd0c7951d6cbec8f28529",
+        "path": "/var/lib/unixbench/metrics/index",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67204864
+      },
+      {
+        "content_fingerprint": "bae9c518c567e1249e3022b4b168b7bb058fe5f39f73c2aa44cd97e17860fe42",
+        "path": "/var/lib/unixbench/metrics/source",
+        "resident_byte_len": 24,
+        "resident_guest_address": 67205120
+      },
+      {
+        "content_fingerprint": "f13daf89431c316b564ef42b684202bca670fb6a688b46740e26418c08a3bac9",
+        "path": "/var/lib/unixbench/metrics/source_path",
+        "resident_byte_len": 27,
+        "resident_guest_address": 67205376
+      },
+      {
+        "content_fingerprint": "bb99e417b359608f84c5dcb2f40d9217ef7ba57d4f9cb40affd0df1e50a7ac48",
+        "path": "/var/lib/unixbench/metrics/whetstone",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67204096
+      },
+      {
+        "content_fingerprint": "d83ea06f4abfe41bff27385c7505776d6d4083047c4d6a42f96f7d1110b997b5",
+        "path": "/var/log/boot.log",
+        "resident_byte_len": 323,
+        "resident_guest_address": 67125504
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/var/log/guest-egress/last-body",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67117056
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/var/log/guest-egress/last-headers",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67116800
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/var/log/guest-tcp/last-received",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67118848
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/var/log/guest-tcp/last-sent",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67118592
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/var/log/guest-udp/last-received",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67120640
+      },
+      {
+        "content_fingerprint": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "path": "/var/log/guest-udp/last-sent",
+        "resident_byte_len": 0,
+        "resident_guest_address": 67120384
+      },
+      {
+        "content_fingerprint": "6a8483202792f1b669f87f7ad76d49b6fc5e20c3f9fe981bdff662a78d350a3d",
+        "path": "/var/log/unixbench/latest.log",
+        "resident_byte_len": 574,
+        "resident_guest_address": 67210496
+      },
+      {
+        "content_fingerprint": "6a8483202792f1b669f87f7ad76d49b6fc5e20c3f9fe981bdff662a78d350a3d",
+        "path": "/var/log/unixbench/run-0001.log",
+        "resident_byte_len": 574,
+        "resident_guest_address": 67211264
+      },
+      {
+        "content_fingerprint": "a17fcf0a2f50e2d495e4f90ce263410edc183add6c62699a2facbccf60410f74",
+        "path": "/var/tmp/uhost-native-ready",
+        "resident_byte_len": 5,
+        "resident_guest_address": 67109120
+      },
+      {
+        "content_fingerprint": "0beaf49677dac35029fbac6f436c4351c599e4e2ccbfd0c7951d6cbec8f28529",
+        "path": "/var/tmp/unixbench-score",
+        "resident_byte_len": 7,
+        "resident_guest_address": 67212032
+      },
+      {
+        "content_fingerprint": "e261fcfbcf427524ccf74d417b2d507187a78efce5cff01392b261da41295107",
+        "path": "/var/tmp/workload-state",
+        "resident_byte_len": 16,
+        "resident_guest_address": 67143680
+      },
+      {
+        "content_fingerprint": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+        "path": "/var/www/healthz",
+        "resident_byte_len": 3,
+        "resident_guest_address": 67125248
+      },
+      {
+        "content_fingerprint": "17f3ff7008f14ddc8450ece3e1a4794a7f1a8425ce4043a6b9a1234b67f39100",
+        "path": "/var/www/index.html",
+        "resident_byte_len": 1089,
+        "resident_guest_address": 67123968
+      }
+    ],
+    "virtual_files": [
+      "/etc/hostname",
+      "/etc/os-release",
+      "/etc/resolv.conf",
+      "/proc/meminfo",
+      "/proc/net/dev",
+      "/proc/net/route",
+      "/proc/sys/kernel/uname",
+      "/run/guest-egress/last-body-bytes",
+      "/run/guest-egress/last-content-type",
+      "/run/guest-egress/last-method",
+      "/run/guest-egress/last-status-line",
+      "/run/guest-egress/last-truncated",
+      "/run/guest-egress/last-url",
+      "/run/guest-egress/transport",
+      "/run/guest-index/dir/_root.ls",
+      "/run/guest-index/dir/proc.ls",
+      "/run/guest-index/dir/proc__net.ls",
+      "/run/guest-index/dir/proc__net__dev.ls",
+      "/run/guest-index/dir/proc__net__route.ls",
+      "/run/guest-index/dir/run.ls",
+      "/run/guest-index/dir/run__guest-kernel.ls",
+      "/run/guest-index/dir/run__guest-kernel__exit-code.ls",
+      "/run/guest-index/dir/run__guest-kernel__operation.ls",
+      "/run/guest-index/dir/run__guest-kernel__stderr.ls",
+      "/run/guest-index/dir/run__guest-kernel__stdout.ls",
+      "/run/guest-index/dir/run__guest-network.ls",
+      "/run/guest-index/dir/run__guest-network__hostname-i.ls",
+      "/run/guest-index/dir/run__guest-network__ip-addr.ls",
+      "/run/guest-index/dir/run__guest-network__ip-route.ls",
+      "/run/guest-index/dir/run__guest-network__port-forwards.ls",
+      "/run/guest-index/dir/run__guest-network__port-forwards__tcp.ls",
+      "/run/guest-index/dir/run__guest-network__port-forwards__udp.ls",
+      "/run/guest-index/dir/run__guest-network__resolvectl-status.ls",
+      "/run/guest-index/dir/run__guest-network__ss-ltn.ls",
+      "/run/guest-index/dir/run__guest-network__ss-lun.ls",
+      "/run/guest-index/dir/var.ls",
+      "/run/guest-index/dir/var__lib.ls",
+      "/run/guest-index/dir/var__lib__unixbench.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__copy.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__dhrystone.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__execl.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__index.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__source.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__source_path.ls",
+      "/run/guest-index/dir/var__lib__unixbench__metrics__whetstone.ls",
+      "/run/guest-index/dir/var__log.ls",
+      "/run/guest-index/dir/var__log__unixbench.ls",
+      "/run/guest-index/dir/var__log__unixbench__latest.log.ls",
+      "/run/guest-index/dir/var__log__unixbench__run-0001.log.ls",
+      "/run/guest-index/dir/var__tmp.ls",
+      "/run/guest-index/dir/var__tmp__unixbench-score.ls",
+      "/run/guest-index/dir/var__tmp__workload-state.ls",
+      "/run/guest-index/sha256/proc__net__dev.txt",
+      "/run/guest-index/sha256/proc__net__route.txt",
+      "/run/guest-index/sha256/run__guest-kernel__exit-code.txt",
+      "/run/guest-index/sha256/run__guest-kernel__operation.txt",
+      "/run/guest-index/sha256/run__guest-kernel__stderr.txt",
+      "/run/guest-index/sha256/run__guest-kernel__stdout.txt",
+      "/run/guest-index/sha256/run__guest-network__hostname-i.txt",
+      "/run/guest-index/sha256/run__guest-network__ip-addr.txt",
+      "/run/guest-index/sha256/run__guest-network__ip-route.txt",
+      "/run/guest-index/sha256/run__guest-network__port-forwards__tcp.txt",
+      "/run/guest-index/sha256/run__guest-network__port-forwards__udp.txt",
+      "/run/guest-index/sha256/run__guest-network__resolvectl-status.txt",
+      "/run/guest-index/sha256/run__guest-network__ss-ltn.txt",
+      "/run/guest-index/sha256/run__guest-network__ss-lun.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__copy.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__dhrystone.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__execl.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__index.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__source.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__source_path.txt",
+      "/run/guest-index/sha256/var__lib__unixbench__metrics__whetstone.txt",
+      "/run/guest-index/sha256/var__log__unixbench__latest.log.txt",
+      "/run/guest-index/sha256/var__log__unixbench__run-0001.log.txt",
+      "/run/guest-index/sha256/var__tmp__unixbench-score.txt",
+      "/run/guest-index/sha256/var__tmp__workload-state.txt",
+      "/run/guest-ingress/default-route",
+      "/run/guest-ingress/tcp/default-service",
+      "/run/guest-ingress/tcp/services/default/banner",
+      "/run/guest-ingress/tcp/services/default/bind",
+      "/run/guest-ingress/tcp/services/default/mode",
+      "/run/guest-ingress/tcp/services/default/response",
+      "/run/guest-ingress/transport",
+      "/run/guest-ingress/udp/default-service",
+      "/run/guest-ingress/udp/services/default/bind",
+      "/run/guest-ingress/udp/services/default/mode",
+      "/run/guest-ingress/udp/services/default/response",
+      "/run/guest-ingress/web-root",
+      "/run/guest-kernel/exit-code",
+      "/run/guest-kernel/operation",
+      "/run/guest-kernel/stderr",
+      "/run/guest-kernel/stdout",
+      "/run/guest-network/dns",
+      "/run/guest-network/gateway",
+      "/run/guest-network/guest-cidr",
+      "/run/guest-network/guest-ipv4",
+      "/run/guest-network/hostname-i",
+      "/run/guest-network/interface",
+      "/run/guest-network/ip-addr",
+      "/run/guest-network/ip-route",
+      "/run/guest-network/mode",
+      "/run/guest-network/port-forwards/tcp",
+      "/run/guest-network/port-forwards/udp",
+      "/run/guest-network/resolvectl-status",
+      "/run/guest-network/ss-ltn",
+      "/run/guest-network/ss-lun",
+      "/run/guest-tcp/last-bytes-received",
+      "/run/guest-tcp/last-bytes-sent",
+      "/run/guest-tcp/last-probe",
+      "/run/guest-tcp/last-target",
+      "/run/guest-tcp/transport",
+      "/run/guest-udp/last-bytes-received",
+      "/run/guest-udp/last-bytes-sent",
+      "/run/guest-udp/last-probe",
+      "/run/guest-udp/last-target",
+      "/run/guest-udp/transport",
+      "/run/system-state",
+      "/run/systemd/services/cloud-init.status",
+      "/run/systemd/services/dns-relay.status",
+      "/run/systemd/services/egress-relay.status",
+      "/run/systemd/services/guest-control.status",
+      "/run/systemd/services/ingress-relay.status",
+      "/run/systemd/services/init.status",
+      "/run/systemd/services/tcp-egress-relay.status",
+      "/run/systemd/services/tcp-ingress-relay.status",
+      "/run/systemd/services/udp-egress-relay.status",
+      "/run/systemd/services/udp-ingress-relay.status",
+      "/run/systemd/services/usernet.status",
+      "/run/uhost/secure-boot/state",
+      "/var/lib/unixbench/metrics/copy",
+      "/var/lib/unixbench/metrics/dhrystone",
+      "/var/lib/unixbench/metrics/execl",
+      "/var/lib/unixbench/metrics/index",
+      "/var/lib/unixbench/metrics/source",
+      "/var/lib/unixbench/metrics/source_path",
+      "/var/lib/unixbench/metrics/whetstone",
+      "/var/log/boot.log",
+      "/var/log/guest-egress/last-body",
+      "/var/log/guest-egress/last-headers",
+      "/var/log/guest-tcp/last-received",
+      "/var/log/guest-tcp/last-sent",
+      "/var/log/guest-udp/last-received",
+      "/var/log/guest-udp/last-sent",
+      "/var/log/unixbench/latest.log",
+      "/var/log/unixbench/run-0001.log",
+      "/var/tmp/uhost-native-ready",
+      "/var/tmp/unixbench-score",
+      "/var/tmp/workload-state",
+      "/var/www/healthz",
+      "/var/www/index.html"
+    ]
+  },
+  "guest_control_ready": true,
+  "guest_memory_bytes": 4294967296,
+  "heartbeat_sequence": 1,
+  "instance_id": "uvi_uvm_native_guest_1",
+  "machine_family": "general_purpose_pci",
+  "memory_backing": "file_backed",
+  "migration_kind": "crash_consistent",
+  "native_execution": {
+    "artifact_count": 2,
+    "call_depth": 0,
+    "carry_flag": false,
+    "completed_events": [
+      {
+        "detail": "firmware uefi_standard dispatches from reset vector",
+        "kind": "firmware_dispatch"
+      },
+      {
+        "detail": "boot device disk selected for handoff",
+        "kind": "boot_device_transfer"
+      },
+      {
+        "detail": "native executor reached guest control handoff",
+        "kind": "userspace_control"
+      },
+      {
+        "detail": "compiled resident guest command for `echo benchmark-start > /var/tmp/workload-state`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `echo benchmark-start > /var/tmp/workload-state`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `echo benchmark-start > /var/tmp/workload-state` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `cat /var/tmp/workload-state`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `cat /var/tmp/workload-state`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `cat /var/tmp/workload-state` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `ls /var/tmp`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `ls /var/tmp`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `ls /var/tmp` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `uname -a`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `uname -a`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `uname -a` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `systemctl is-system-running`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `systemctl is-system-running`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `systemctl is-system-running` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `cat /var/log/boot.log`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `cat /var/log/boot.log`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `cat /var/log/boot.log` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `unixbench --summary`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `unixbench --summary`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `unixbench --summary` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `sha256sum /var/log/unixbench/latest.log`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `sha256sum /var/log/unixbench/latest.log`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `sha256sum /var/log/unixbench/latest.log` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `cat /var/log/unixbench/latest.log`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `cat /var/log/unixbench/latest.log`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `cat /var/log/unixbench/latest.log` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      },
+      {
+        "detail": "compiled resident guest command for `cat /proc/meminfo`",
+        "kind": "guest_command_cache_miss"
+      },
+      {
+        "detail": "serial command path accepted `cat /proc/meminfo`",
+        "kind": "guest_command_channel_dispatch"
+      },
+      {
+        "detail": "serial guest command completed `cat /proc/meminfo` with exit code 0",
+        "kind": "guest_command_channel_completion"
+      }
+    ],
+    "execution_semantics": "interpreted_guest_isa_v0",
+    "fault_detail": null,
+    "fault_vector": null,
+    "faulted": false,
+    "guest_memory_allocation_count": 183,
+    "guest_memory_allocations": [
+      {
+        "byte_len": 28,
+        "guest_address": 1048576,
+        "label": "program:boot_dispatch",
+        "mapped_region": "firmware"
+      },
+      {
+        "byte_len": 102,
+        "guest_address": 1049600,
+        "label": "program:boot_service",
+        "mapped_region": "firmware"
+      },
+      {
+        "byte_len": 618,
+        "guest_address": 1050624,
+        "label": "program:guest_kernel_service",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1052672,
+        "label": "program:guest_command_0001",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1052928,
+        "label": "program:guest_command_0002",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1053184,
+        "label": "program:guest_command_0003",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1053440,
+        "label": "program:guest_command_0004",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1053696,
+        "label": "program:guest_command_0005",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1053952,
+        "label": "program:guest_command_0006",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1054208,
+        "label": "program:guest_command_0007",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1054464,
+        "label": "program:guest_command_0008",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1054720,
+        "label": "program:guest_command_0009",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 20,
+        "guest_address": 1054976,
+        "label": "program:guest_command_0010",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 18,
+        "guest_address": 67108864,
+        "label": "file:/etc/hostname",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 5,
+        "guest_address": 67109120,
+        "label": "file:/var/tmp/uhost-native-ready",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 71,
+        "guest_address": 67109376,
+        "label": "file:/etc/os-release",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 67,
+        "guest_address": 67109632,
+        "label": "file:/proc/sys/kernel/uname",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 54,
+        "guest_address": 67109888,
+        "label": "file:/proc/meminfo",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67110144,
+        "label": "file:/run/system-state",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 24,
+        "guest_address": 67113216,
+        "label": "file:/run/guest-network/mode",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 5,
+        "guest_address": 67113472,
+        "label": "file:/run/guest-network/interface",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67113728,
+        "label": "file:/run/guest-network/guest-ipv4",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 13,
+        "guest_address": 67113984,
+        "label": "file:/run/guest-network/guest-cidr",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 9,
+        "guest_address": 67114240,
+        "label": "file:/run/guest-network/gateway",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 9,
+        "guest_address": 67114496,
+        "label": "file:/run/guest-network/dns",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 95,
+        "guest_address": 67114752,
+        "label": "file:/etc/resolv.conf",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 38,
+        "guest_address": 67115008,
+        "label": "file:/run/guest-egress/transport",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67115264,
+        "label": "file:/run/guest-egress/last-url",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67115520,
+        "label": "file:/run/guest-egress/last-method",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67115776,
+        "label": "file:/run/guest-egress/last-status-line",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67116032,
+        "label": "file:/run/guest-egress/last-content-type",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67116288,
+        "label": "file:/run/guest-egress/last-body-bytes",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67116544,
+        "label": "file:/run/guest-egress/last-truncated",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67116800,
+        "label": "file:/var/log/guest-egress/last-headers",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67117056,
+        "label": "file:/var/log/guest-egress/last-body",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 38,
+        "guest_address": 67117312,
+        "label": "file:/run/guest-tcp/transport",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67117568,
+        "label": "file:/run/guest-tcp/last-target",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67117824,
+        "label": "file:/run/guest-tcp/last-probe",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67118080,
+        "label": "file:/run/guest-tcp/last-bytes-sent",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67118336,
+        "label": "file:/run/guest-tcp/last-bytes-received",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67118592,
+        "label": "file:/var/log/guest-tcp/last-sent",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67118848,
+        "label": "file:/var/log/guest-tcp/last-received",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 38,
+        "guest_address": 67119104,
+        "label": "file:/run/guest-udp/transport",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67119360,
+        "label": "file:/run/guest-udp/last-target",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67119616,
+        "label": "file:/run/guest-udp/last-probe",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67119872,
+        "label": "file:/run/guest-udp/last-bytes-sent",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67120128,
+        "label": "file:/run/guest-udp/last-bytes-received",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67120384,
+        "label": "file:/var/log/guest-udp/last-sent",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67120640,
+        "label": "file:/var/log/guest-udp/last-received",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 32,
+        "guest_address": 67120896,
+        "label": "file:/run/guest-ingress/transport",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 9,
+        "guest_address": 67121152,
+        "label": "file:/run/guest-ingress/web-root",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67121408,
+        "label": "file:/run/guest-ingress/default-route",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67121664,
+        "label": "file:/run/guest-ingress/tcp/default-service",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 12,
+        "guest_address": 67121920,
+        "label": "file:/run/guest-ingress/tcp/services/default/bind",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 5,
+        "guest_address": 67122176,
+        "label": "file:/run/guest-ingress/tcp/services/default/mode",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 32,
+        "guest_address": 67122432,
+        "label": "file:/run/guest-ingress/tcp/services/default/banner",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67122688,
+        "label": "file:/run/guest-ingress/tcp/services/default/response",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67122944,
+        "label": "file:/run/guest-ingress/udp/default-service",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 12,
+        "guest_address": 67123200,
+        "label": "file:/run/guest-ingress/udp/services/default/bind",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 5,
+        "guest_address": 67123456,
+        "label": "file:/run/guest-ingress/udp/services/default/mode",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67123712,
+        "label": "file:/run/guest-ingress/udp/services/default/response",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 1089,
+        "guest_address": 67123968,
+        "label": "file:/var/www/index.html",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 3,
+        "guest_address": 67125248,
+        "label": "file:/var/www/healthz",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 323,
+        "guest_address": 67125504,
+        "label": "file:/var/log/boot.log",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 9,
+        "guest_address": 67126016,
+        "label": "file:/run/uhost/secure-boot/state",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 117,
+        "guest_address": 67126272,
+        "label": "file:/run/systemd/services/init.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 123,
+        "guest_address": 67126528,
+        "label": "file:/run/systemd/services/usernet.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 135,
+        "guest_address": 67126784,
+        "label": "file:/run/systemd/services/guest-control.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 133,
+        "guest_address": 67127040,
+        "label": "file:/run/systemd/services/egress-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 141,
+        "guest_address": 67127296,
+        "label": "file:/run/systemd/services/tcp-egress-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 141,
+        "guest_address": 67127552,
+        "label": "file:/run/systemd/services/udp-egress-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 127,
+        "guest_address": 67127808,
+        "label": "file:/run/systemd/services/dns-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 135,
+        "guest_address": 67128064,
+        "label": "file:/run/systemd/services/ingress-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 143,
+        "guest_address": 67128320,
+        "label": "file:/run/systemd/services/tcp-ingress-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 143,
+        "guest_address": 67128576,
+        "label": "file:/run/systemd/services/udp-ingress-relay.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 129,
+        "guest_address": 67128832,
+        "label": "file:/run/systemd/services/cloud-init.status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 23,
+        "guest_address": 67139072,
+        "label": "data:guest_command_0001:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 15,
+        "guest_address": 67139328,
+        "label": "data:guest_command_0001:arg1",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67139584,
+        "label": "data:guest_command_0001:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 16,
+        "guest_address": 67143680,
+        "label": "file:/var/tmp/workload-state",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 90,
+        "guest_address": 67143936,
+        "label": "file:/run/guest-index/sha256/var__tmp__workload-state.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 15,
+        "guest_address": 67144192,
+        "label": "file:/run/guest-index/dir/var__tmp__workload-state.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 270,
+        "guest_address": 67145216,
+        "label": "file:/run/guest-network/ip-addr",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 89,
+        "guest_address": 67145728,
+        "label": "file:/run/guest-network/ip-route",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67145984,
+        "label": "file:/run/guest-network/hostname-i",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 365,
+        "guest_address": 67146240,
+        "label": "file:/run/guest-network/resolvectl-status",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 444,
+        "guest_address": 67146752,
+        "label": "file:/proc/net/dev",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 171,
+        "guest_address": 67147264,
+        "label": "file:/proc/net/route",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 152,
+        "guest_address": 67147520,
+        "label": "file:/run/guest-network/ss-ltn",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 152,
+        "guest_address": 67147776,
+        "label": "file:/run/guest-network/ss-lun",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 29,
+        "guest_address": 67148032,
+        "label": "file:/run/guest-network/port-forwards/tcp",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 29,
+        "guest_address": 67148288,
+        "label": "file:/run/guest-network/port-forwards/udp",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 80,
+        "guest_address": 67148544,
+        "label": "file:/run/guest-index/sha256/proc__net__dev.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 4,
+        "guest_address": 67148800,
+        "label": "file:/run/guest-index/dir/proc__net__dev.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 82,
+        "guest_address": 67149056,
+        "label": "file:/run/guest-index/sha256/proc__net__route.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67149312,
+        "label": "file:/run/guest-index/dir/proc__net__route.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 96,
+        "guest_address": 67149568,
+        "label": "file:/run/guest-index/sha256/run__guest-network__hostname-i.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 11,
+        "guest_address": 67149824,
+        "label": "file:/run/guest-index/dir/run__guest-network__hostname-i.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 93,
+        "guest_address": 67150080,
+        "label": "file:/run/guest-index/sha256/run__guest-network__ip-addr.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67150336,
+        "label": "file:/run/guest-index/dir/run__guest-network__ip-addr.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 94,
+        "guest_address": 67150592,
+        "label": "file:/run/guest-index/sha256/run__guest-network__ip-route.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 9,
+        "guest_address": 67150848,
+        "label": "file:/run/guest-index/dir/run__guest-network__ip-route.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 103,
+        "guest_address": 67151104,
+        "label": "file:/run/guest-index/sha256/run__guest-network__port-forwards__tcp.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 4,
+        "guest_address": 67151360,
+        "label": "file:/run/guest-index/dir/run__guest-network__port-forwards__tcp.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 103,
+        "guest_address": 67151616,
+        "label": "file:/run/guest-index/sha256/run__guest-network__port-forwards__udp.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 4,
+        "guest_address": 67151872,
+        "label": "file:/run/guest-index/dir/run__guest-network__port-forwards__udp.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 103,
+        "guest_address": 67152128,
+        "label": "file:/run/guest-index/sha256/run__guest-network__resolvectl-status.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 18,
+        "guest_address": 67152384,
+        "label": "file:/run/guest-index/dir/run__guest-network__resolvectl-status.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 92,
+        "guest_address": 67152640,
+        "label": "file:/run/guest-index/sha256/run__guest-network__ss-ltn.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67152896,
+        "label": "file:/run/guest-index/dir/run__guest-network__ss-ltn.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 92,
+        "guest_address": 67153152,
+        "label": "file:/run/guest-index/sha256/run__guest-network__ss-lun.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67153408,
+        "label": "file:/run/guest-index/dir/run__guest-network__ss-lun.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 16,
+        "guest_address": 67153920,
+        "label": "file:/run/guest-index/dir/proc.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67154176,
+        "label": "file:/run/guest-index/dir/proc__net.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 123,
+        "guest_address": 67154688,
+        "label": "file:/run/guest-index/dir/run__guest-network.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67154944,
+        "label": "file:/run/guest-index/dir/run__guest-network__port-forwards.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 23,
+        "guest_address": 67159040,
+        "label": "data:guest_command_0002:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67159296,
+        "label": "data:guest_command_0002:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67167232,
+        "label": "data:guest_command_0003:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67167488,
+        "label": "data:guest_command_0003:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67175424,
+        "label": "data:guest_command_0004:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67183360,
+        "label": "data:guest_command_0005:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 17,
+        "guest_address": 67191296,
+        "label": "data:guest_command_0006:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67191552,
+        "label": "data:guest_command_0006:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67199744,
+        "label": "data:guest_command_0007:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67203840,
+        "label": "file:/var/lib/unixbench/metrics/dhrystone",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67204096,
+        "label": "file:/var/lib/unixbench/metrics/whetstone",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67204352,
+        "label": "file:/var/lib/unixbench/metrics/execl",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 9,
+        "guest_address": 67204608,
+        "label": "file:/var/lib/unixbench/metrics/copy",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67204864,
+        "label": "file:/var/lib/unixbench/metrics/index",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 24,
+        "guest_address": 67205120,
+        "label": "file:/var/lib/unixbench/metrics/source",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 27,
+        "guest_address": 67205376,
+        "label": "file:/var/lib/unixbench/metrics/source_path",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 98,
+        "guest_address": 67205632,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__copy.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 5,
+        "guest_address": 67205888,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__copy.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 103,
+        "guest_address": 67206144,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__dhrystone.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67206400,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__dhrystone.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 99,
+        "guest_address": 67206656,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__execl.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67206912,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__execl.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 99,
+        "guest_address": 67207168,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__index.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 6,
+        "guest_address": 67207424,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__index.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 100,
+        "guest_address": 67207680,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__source.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67207936,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__source.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 105,
+        "guest_address": 67208192,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__source_path.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 12,
+        "guest_address": 67208448,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__source_path.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 103,
+        "guest_address": 67208704,
+        "label": "file:/run/guest-index/sha256/var__lib__unixbench__metrics__whetstone.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67208960,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics__whetstone.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67209728,
+        "label": "file:/run/guest-index/dir/var__lib.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 8,
+        "guest_address": 67209984,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 56,
+        "guest_address": 67210240,
+        "label": "file:/run/guest-index/dir/var__lib__unixbench__metrics.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 574,
+        "guest_address": 67210496,
+        "label": "file:/var/log/unixbench/latest.log",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 574,
+        "guest_address": 67211264,
+        "label": "file:/var/log/unixbench/run-0001.log",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67212032,
+        "label": "file:/var/tmp/unixbench-score",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 96,
+        "guest_address": 67212288,
+        "label": "file:/run/guest-index/sha256/var__log__unixbench__latest.log.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 11,
+        "guest_address": 67212544,
+        "label": "file:/run/guest-index/dir/var__log__unixbench__latest.log.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 98,
+        "guest_address": 67212800,
+        "label": "file:/run/guest-index/sha256/var__log__unixbench__run-0001.log.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 13,
+        "guest_address": 67213056,
+        "label": "file:/run/guest-index/dir/var__log__unixbench__run-0001.log.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 91,
+        "guest_address": 67213312,
+        "label": "file:/run/guest-index/sha256/var__tmp__unixbench-score.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 16,
+        "guest_address": 67213568,
+        "label": "file:/run/guest-index/dir/var__tmp__unixbench-score.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 16,
+        "guest_address": 67214080,
+        "label": "file:/run/guest-index/dir/var.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 52,
+        "guest_address": 67214336,
+        "label": "file:/run/guest-index/dir/var__log.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 24,
+        "guest_address": 67214592,
+        "label": "file:/run/guest-index/dir/var__log__unixbench.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 50,
+        "guest_address": 67214848,
+        "label": "file:/run/guest-index/dir/var__tmp.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 29,
+        "guest_address": 67219456,
+        "label": "data:guest_command_0008:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67219712,
+        "label": "data:guest_command_0008:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 29,
+        "guest_address": 67227648,
+        "label": "data:guest_command_0009:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67227904,
+        "label": "data:guest_command_0009:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 13,
+        "guest_address": 67236352,
+        "label": "data:guest_command_0010:arg0",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 33,
+        "guest_address": 67236608,
+        "label": "data:guest_command_0010:kernel_request",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67240704,
+        "label": "file:/run/guest-kernel/operation",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 54,
+        "guest_address": 67240960,
+        "label": "file:/run/guest-kernel/stdout",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 0,
+        "guest_address": 67241216,
+        "label": "file:/run/guest-kernel/stderr",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 2,
+        "guest_address": 67241472,
+        "label": "file:/run/guest-kernel/exit-code",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 94,
+        "guest_address": 67241728,
+        "label": "file:/run/guest-index/sha256/run__guest-kernel__exit-code.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67241984,
+        "label": "file:/run/guest-index/dir/run__guest-kernel__exit-code.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 94,
+        "guest_address": 67242240,
+        "label": "file:/run/guest-index/sha256/run__guest-kernel__operation.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 10,
+        "guest_address": 67242496,
+        "label": "file:/run/guest-index/dir/run__guest-kernel__operation.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 91,
+        "guest_address": 67242752,
+        "label": "file:/run/guest-index/sha256/run__guest-kernel__stderr.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67243008,
+        "label": "file:/run/guest-index/dir/run__guest-kernel__stderr.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 91,
+        "guest_address": 67243264,
+        "label": "file:/run/guest-index/sha256/run__guest-kernel__stdout.txt",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 7,
+        "guest_address": 67243520,
+        "label": "file:/run/guest-index/dir/run__guest-kernel__stdout.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 17,
+        "guest_address": 67243776,
+        "label": "file:/run/guest-index/dir/_root.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 113,
+        "guest_address": 67244032,
+        "label": "file:/run/guest-index/dir/run.ls",
+        "mapped_region": "guest_ram"
+      },
+      {
+        "byte_len": 34,
+        "guest_address": 67244288,
+        "label": "file:/run/guest-index/dir/run__guest-kernel.ls",
+        "mapped_region": "guest_ram"
+      }
+    ],
+    "guest_memory_backed": true,
+    "guest_memory_resident_bytes": 11169,
+    "halted": true,
+    "instruction_pointer": 1054996,
+    "instruction_trace": [
+      {
+        "detail": "call 0x10041d",
+        "guest_address": 1048576,
+        "opcode": "call_abs64",
+        "program_name": "boot_dispatch"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1049629,
+        "opcode": "mov_imm64",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "native call boot_service_route_dispatch via firmware_dispatch",
+        "guest_address": 1049639,
+        "opcode": "boot_service_route_dispatch",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "boot stage firmware_dispatch executed through boot_service",
+        "guest_address": 1049639,
+        "opcode": "firmware_dispatch",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "ret 0x100009",
+        "guest_address": 1049641,
+        "opcode": "ret",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "call 0x10042a",
+        "guest_address": 1048585,
+        "opcode": "call_abs64",
+        "program_name": "boot_dispatch"
+      },
+      {
+        "detail": "block control queued boot-device transfer request @ 0x10020000",
+        "guest_address": 1049642,
+        "opcode": "mmio_write64",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "mov r1, 0x3",
+        "guest_address": 1049659,
+        "opcode": "mov_imm64",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "native call boot_service_route_dispatch via boot_device_transfer",
+        "guest_address": 1049669,
+        "opcode": "boot_service_route_dispatch",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "boot stage boot_device_transfer executed through boot_service",
+        "guest_address": 1049669,
+        "opcode": "boot_device_transfer",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "ret 0x100012",
+        "guest_address": 1049671,
+        "opcode": "ret",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "call 0x100448",
+        "guest_address": 1048594,
+        "opcode": "call_abs64",
+        "program_name": "boot_dispatch"
+      },
+      {
+        "detail": "serial loop drained byte 0x01 from uart_console @ 0x10000000",
+        "guest_address": 1049672,
+        "opcode": "mmio_write64",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "mov r1, 0x4",
+        "guest_address": 1049689,
+        "opcode": "mov_imm64",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "native call boot_service_route_dispatch via userspace_control",
+        "guest_address": 1049699,
+        "opcode": "boot_service_route_dispatch",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "boot stage userspace_control executed through boot_service",
+        "guest_address": 1049699,
+        "opcode": "userspace_control",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "ret 0x10001b",
+        "guest_address": 1049701,
+        "opcode": "ret",
+        "program_name": "boot_service"
+      },
+      {
+        "detail": "boot guest-isa halted",
+        "guest_address": 1048603,
+        "opcode": "halt",
+        "program_name": "boot_dispatch"
+      },
+      {
+        "detail": "mov r0, 0x4007800",
+        "guest_address": 1052672,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0001"
+      },
+      {
+        "detail": "call 0x100920",
+        "guest_address": 1052682,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0001"
+      },
+      {
+        "detail": "mov r1, 0x2",
+        "guest_address": 1050912,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x5",
+        "guest_address": 1050922,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x44",
+        "guest_address": 1050932,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via mutation:file_write",
+        "guest_address": 1050942,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_echo_redirect executed via mutation:file_write",
+        "guest_address": 1050942,
+        "opcode": "guest_echo_redirect",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101013",
+        "guest_address": 1050944,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1052691,
+        "opcode": "halt",
+        "program_name": "guest_command_0001"
+      },
+      {
+        "detail": "mov r0, 0x400c500",
+        "guest_address": 1052928,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0002"
+      },
+      {
+        "detail": "call 0x1008ff",
+        "guest_address": 1052938,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0002"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1050879,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x4",
+        "guest_address": 1050889,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x43",
+        "guest_address": 1050899,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_cat executed via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_cat",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101113",
+        "guest_address": 1050911,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1052947,
+        "opcode": "halt",
+        "program_name": "guest_command_0002"
+      },
+      {
+        "detail": "mov r0, 0x400e500",
+        "guest_address": 1053184,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0003"
+      },
+      {
+        "detail": "call 0x100962",
+        "guest_address": 1053194,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0003"
+      },
+      {
+        "detail": "mov r1, 0x3",
+        "guest_address": 1050978,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x7",
+        "guest_address": 1050988,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x46",
+        "guest_address": 1050998,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via index:directory_index",
+        "guest_address": 1051008,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_ls executed via index:directory_index",
+        "guest_address": 1051008,
+        "opcode": "guest_ls",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101213",
+        "guest_address": 1051010,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1053203,
+        "opcode": "halt",
+        "program_name": "guest_command_0003"
+      },
+      {
+        "detail": "mov r0, 0x4010400",
+        "guest_address": 1053440,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0004"
+      },
+      {
+        "detail": "call 0x10089c",
+        "guest_address": 1053450,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0004"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1050780,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x1",
+        "guest_address": 1050790,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x40",
+        "guest_address": 1050800,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via read_only:fixed_uname",
+        "guest_address": 1050810,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_uname executed via read_only:fixed_uname",
+        "guest_address": 1050810,
+        "opcode": "guest_uname",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101313",
+        "guest_address": 1050812,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1053459,
+        "opcode": "halt",
+        "program_name": "guest_command_0004"
+      },
+      {
+        "detail": "mov r0, 0x4012300",
+        "guest_address": 1053696,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0005"
+      },
+      {
+        "detail": "call 0x1008bd",
+        "guest_address": 1053706,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0005"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1050813,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x2",
+        "guest_address": 1050823,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x41",
+        "guest_address": 1050833,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via read_only:fixed_system_state",
+        "guest_address": 1050843,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_system_state executed via read_only:fixed_system_state",
+        "guest_address": 1050843,
+        "opcode": "guest_system_state",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101413",
+        "guest_address": 1050845,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1053715,
+        "opcode": "halt",
+        "program_name": "guest_command_0005"
+      },
+      {
+        "detail": "mov r0, 0x4014300",
+        "guest_address": 1053952,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0006"
+      },
+      {
+        "detail": "call 0x1008ff",
+        "guest_address": 1053962,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0006"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1050879,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x4",
+        "guest_address": 1050889,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x43",
+        "guest_address": 1050899,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_cat executed via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_cat",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101513",
+        "guest_address": 1050911,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1053971,
+        "opcode": "halt",
+        "program_name": "guest_command_0006"
+      },
+      {
+        "detail": "mov r0, 0x4016300",
+        "guest_address": 1054208,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0007"
+      },
+      {
+        "detail": "call 0x1009a4",
+        "guest_address": 1054218,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0007"
+      },
+      {
+        "detail": "mov r1, 0x4",
+        "guest_address": 1051044,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x9",
+        "guest_address": 1051054,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x48",
+        "guest_address": 1051064,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via benchmark:unixbench",
+        "guest_address": 1051074,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_unixbench executed via benchmark:unixbench",
+        "guest_address": 1051074,
+        "opcode": "guest_unixbench",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101613",
+        "guest_address": 1051076,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1054227,
+        "opcode": "halt",
+        "program_name": "guest_command_0007"
+      },
+      {
+        "detail": "mov r0, 0x401b100",
+        "guest_address": 1054464,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0008"
+      },
+      {
+        "detail": "call 0x100983",
+        "guest_address": 1054474,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0008"
+      },
+      {
+        "detail": "mov r1, 0x3",
+        "guest_address": 1051011,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x8",
+        "guest_address": 1051021,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x47",
+        "guest_address": 1051031,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via index:sha256_index",
+        "guest_address": 1051041,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_sha256sum executed via index:sha256_index",
+        "guest_address": 1051041,
+        "opcode": "guest_sha256sum",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101713",
+        "guest_address": 1051043,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1054483,
+        "opcode": "halt",
+        "program_name": "guest_command_0008"
+      },
+      {
+        "detail": "mov r0, 0x401d100",
+        "guest_address": 1054720,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0009"
+      },
+      {
+        "detail": "call 0x1008ff",
+        "guest_address": 1054730,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0009"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1050879,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x4",
+        "guest_address": 1050889,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x43",
+        "guest_address": 1050899,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_cat executed via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_cat",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101813",
+        "guest_address": 1050911,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1054739,
+        "opcode": "halt",
+        "program_name": "guest_command_0009"
+      },
+      {
+        "detail": "mov r0, 0x401f300",
+        "guest_address": 1054976,
+        "opcode": "mov_imm64",
+        "program_name": "guest_command_0010"
+      },
+      {
+        "detail": "call 0x1008ff",
+        "guest_address": 1054986,
+        "opcode": "call_abs64",
+        "program_name": "guest_command_0010"
+      },
+      {
+        "detail": "mov r1, 0x1",
+        "guest_address": 1050879,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r2, 0x4",
+        "guest_address": 1050889,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "mov r3, 0x43",
+        "guest_address": 1050899,
+        "opcode": "mov_imm64",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "native call guest_service_route_dispatch via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_service_route_dispatch",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest-kernel route guest_cat executed via read_only:file_read",
+        "guest_address": 1050909,
+        "opcode": "guest_cat",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "ret 0x101913",
+        "guest_address": 1050911,
+        "opcode": "ret",
+        "program_name": "guest_kernel_service"
+      },
+      {
+        "detail": "guest command guest-isa halted",
+        "guest_address": 1054995,
+        "opcode": "halt",
+        "program_name": "guest_command_0010"
+      }
+    ],
+    "interrupts_enabled": true,
+    "last_trap_detail": "guest program `guest_command_0010` completed at instruction pointer 0x101914",
+    "last_trap_vector": 32,
+    "mmio_access_log": [
+      {
+        "access_kind": "write",
+        "detail": "block control queued boot-device transfer request @ 0x10020000",
+        "guest_physical_address": 268566528,
+        "region_name": "virt_block_control",
+        "value": 3
+      },
+      {
+        "access_kind": "write",
+        "detail": "boot device disk selected for handoff",
+        "guest_physical_address": 268566528,
+        "region_name": "virt_block_control",
+        "value": 1
+      },
+      {
+        "access_kind": "write",
+        "detail": "block control completed boot-device handoff for primary_disk with token 0x6f732d74736f6875",
+        "guest_physical_address": 268566528,
+        "region_name": "virt_block_control",
+        "value": 34
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop drained byte 0x01 from uart_console @ 0x10000000",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 1
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x01",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "native executor reached guest control handoff",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 1
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x01",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `echo benchmark-start > /var/tmp/workload-state`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 46
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x2e",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0001` completed at instruction pointer 0x101014",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x00 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 0
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `cat /var/tmp/workload-state`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 27
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x1b",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0002` completed at instruction pointer 0x101114",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x10 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 16
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `ls /var/tmp`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 11
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x0b",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0003` completed at instruction pointer 0x101214",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x22 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 34
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `uname -a`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 8
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x08",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0004` completed at instruction pointer 0x101314",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x43 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 67
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `systemctl is-system-running`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 27
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x1b",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0005` completed at instruction pointer 0x101414",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x08 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 8
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `cat /var/log/boot.log`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 21
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x15",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0006` completed at instruction pointer 0x101514",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x43 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 323
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `unixbench --summary`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 19
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x13",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0007` completed at instruction pointer 0x101614",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x3e from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 574
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `sha256sum /var/log/unixbench/latest.log`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 39
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x27",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0008` completed at instruction pointer 0x101714",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x60 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 96
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `cat /var/log/unixbench/latest.log`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 33
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x21",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0009` completed at instruction pointer 0x101814",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x3e from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 574
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial guest command dispatched `cat /proc/meminfo`",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 17
+      },
+      {
+        "access_kind": "write",
+        "detail": "serial loop completed transmit byte 0x11",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 36
+      },
+      {
+        "access_kind": "write",
+        "detail": "guest program `guest_command_0010` completed at instruction pointer 0x101914",
+        "guest_physical_address": 268500992,
+        "region_name": "virt_timer",
+        "value": 32
+      },
+      {
+        "access_kind": "read",
+        "detail": "serial loop sampled byte 0x36 from uart_console",
+        "guest_physical_address": 268435456,
+        "region_name": "uart_console",
+        "value": 54
+      }
+    ],
+    "mmio_regions": [
+      {
+        "byte_len": 4096,
+        "guest_physical_base": 268435456,
+        "name": "uart_console",
+        "read_dispatch": "console_rx",
+        "write_dispatch": "console_tx"
+      },
+      {
+        "byte_len": 4096,
+        "guest_physical_base": 268500992,
+        "name": "virt_timer",
+        "read_dispatch": "timer_state",
+        "write_dispatch": "timer_control"
+      },
+      {
+        "byte_len": 4096,
+        "guest_physical_base": 268566528,
+        "name": "virt_block_control",
+        "read_dispatch": "block_status",
+        "write_dispatch": "block_queue"
+      },
+      {
+        "byte_len": 4096,
+        "guest_physical_base": 268632064,
+        "name": "virtio_console",
+        "read_dispatch": "console_queue_rx",
+        "write_dispatch": "console_queue_tx"
+      },
+      {
+        "byte_len": 4096,
+        "guest_physical_base": 268697600,
+        "name": "virtio_rng",
+        "read_dispatch": "entropy_queue",
+        "write_dispatch": "rng_control"
+      },
+      {
+        "byte_len": 4096,
+        "guest_physical_base": 268763136,
+        "name": "virtio_net",
+        "read_dispatch": "net_queue_rx",
+        "write_dispatch": "net_queue_tx"
+      }
+    ],
+    "pending_interrupts": [
+      {
+        "detail": "block control completed boot-device handoff for primary_disk with token 0x6f732d74736f6875",
+        "source": "virt_block_control",
+        "vector": 34
+      },
+      {
+        "detail": "guest program `guest_command_0001` completed at instruction pointer 0x101014",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0002` completed at instruction pointer 0x101114",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0003` completed at instruction pointer 0x101214",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0004` completed at instruction pointer 0x101314",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0005` completed at instruction pointer 0x101414",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0006` completed at instruction pointer 0x101514",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0007` completed at instruction pointer 0x101614",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0008` completed at instruction pointer 0x101714",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "guest program `guest_command_0009` completed at instruction pointer 0x101814",
+        "source": "virt_timer",
+        "vector": 32
+      },
+      {
+        "detail": "serial loop completed transmit byte 0x11",
+        "source": "uart_console",
+        "vector": 36
+      },
+      {
+        "detail": "guest program `guest_command_0010` completed at instruction pointer 0x101914",
+        "source": "virt_timer",
+        "vector": 32
+      }
+    ],
+    "reset_vector": 1048576,
+    "resident_program_count": 13,
+    "resident_programs": [
+      {
+        "byte_len": 28,
+        "content_fingerprint": "64b9e42ed357e9d4da16487552d0e6bd019c50b5c60facd7f8afc00154372563",
+        "entry_point": 1048576,
+        "mapped_region": "firmware",
+        "name": "boot_dispatch"
+      },
+      {
+        "byte_len": 102,
+        "content_fingerprint": "f7393945629b7d0eabe68c32be25ea44b31b2c25cb8b9404ed861fdec01d86d3",
+        "entry_point": 1049600,
+        "mapped_region": "firmware",
+        "name": "boot_service"
+      },
+      {
+        "byte_len": 618,
+        "content_fingerprint": "146c855fabf4dedee6ff7ba4e0436b1ae7e702de1a42b62b52062c8cd51dc369",
+        "entry_point": 1050624,
+        "mapped_region": "guest_ram",
+        "name": "guest_kernel_service"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "b203520419cd2ff11c5f80b44d2427ddafa35cde1699fdbd70015e7097172c32",
+        "entry_point": 1052672,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0001"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "aa2a0c5101522a03b94bfa52dca69490ef2df7943d7270f130e1ceb8ef2b22e3",
+        "entry_point": 1052928,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0002"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "fceb068f0609171cbbccf83cb94662523eb0f0e20ed00b55f6464a480d9ba266",
+        "entry_point": 1053184,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0003"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "37c4ed5b7399f62f6c667282f69aa7160ff837008940d799c08209405d2a37ba",
+        "entry_point": 1053440,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0004"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "abb7e505fb535abdb9ca5eca2b1b5edb76d49436f16d2eef29e04e1b9ee4c802",
+        "entry_point": 1053696,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0005"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "6ad44cc91e012d432046bd1322be95a81ae1ec0054286ce3c8e01f6ecde31fd8",
+        "entry_point": 1053952,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0006"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "aa0bbbbe87bdc83b64f73bfbeda6db262a87fc2f39897c0883da44575845250d",
+        "entry_point": 1054208,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0007"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "47cab18367308ac2dd705a7c344c8d97c76822804763d2e0ed226049f99aa2bf",
+        "entry_point": 1054464,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0008"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "162ecf84cc21e2ac89603210f88ad1110e23744419eddcb68313c4b84f4acd0f",
+        "entry_point": 1054720,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0009"
+      },
+      {
+        "byte_len": 20,
+        "content_fingerprint": "1eaff82a616e7f9d83816b3fda5a839b38fde9b3c082bb00100ec3c503dfeb20",
+        "entry_point": 1054976,
+        "mapped_region": "guest_ram",
+        "name": "guest_command_0010"
+      }
+    ],
+    "sign_flag": false,
+    "stack_pointer": 4294963200,
+    "steps_executed": 84,
+    "trap_frame_depth": 0,
+    "zero_flag": true
+  },
+  "numa_nodes": [],
+  "phase": "running",
+  "primary_boot_device": "disk",
+  "restart_policy": "on-failure",
+  "sandbox_contract_source": "launch_contract",
+  "sandbox_enforcement_mode": "worker_contract",
+  "sandbox_layers": [
+    "capability_drop",
+    "cgroup_v2",
+    "namespaces",
+    "seccomp"
+  ],
+  "secure_boot": false,
+  "secure_boot_measurements": [],
+  "session_id": "urs_uvm_native_guest_1",
+  "telemetry": [],
+  "vcpu": 2,
+  "worker_manifest_fingerprint": "6a540cd4fabccb6de500d825f5cc582a52318348e9108de58fd025b273aa8c0a",
+  "worker_manifest_version": "v1",
+  "worker_states": [
+    "supervisor:running",
+    "core:running",
+    "block:running",
+    "net:running"
+  ],
+  "workers": [
+    {
+      "detail": {
+        "core_control_path": "direct_call",
+        "heartbeat_interval_ms": 1000,
+        "runner_mode": "one_shot"
+      },
+      "execution_scope": "lifecycle_orchestration",
+      "name": "supervisor",
+      "observed_pid": 2213271,
+      "process_binding": "runner_process",
+      "sandbox_contract_source": "launch_contract",
+      "sandbox_enforcement_mode": "worker_contract",
+      "sandbox_layers": [
+        "capability_drop",
+        "cgroup_v2",
+        "namespaces",
+        "seccomp"
+      ],
+      "seccomp_profile": "supervisor_control_v1",
+      "state": "running"
+    },
+    {
+      "detail": {
+        "guest_memory_bytes": 4294967296,
+        "instance_ownership": "call_scoped",
+        "memory_backing": "file_backed",
+        "vcpu": 2
+      },
+      "execution_scope": "softvm_core",
+      "name": "core",
+      "observed_pid": 2213271,
+      "process_binding": "shared_runner_process",
+      "sandbox_contract_source": "launch_contract",
+      "sandbox_enforcement_mode": "worker_contract",
+      "sandbox_layers": [
+        "capability_drop",
+        "cgroup_v2",
+        "namespaces",
+        "seccomp"
+      ],
+      "seccomp_profile": "guest_core_v1",
+      "state": "running"
+    },
+    {
+      "detail": {
+        "artifact_count": 2,
+        "cdrom_image": null,
+        "disk_image": "/data/project/EXPERIMENT-UHOST/tmp/uvm-native-guest-control/ubuntu-nightly-root.raw"
+      },
+      "execution_scope": "artifact_staging",
+      "name": "block",
+      "observed_pid": 2213271,
+      "process_binding": "shared_runner_process",
+      "sandbox_contract_source": "launch_contract",
+      "sandbox_enforcement_mode": "worker_contract",
+      "sandbox_layers": [
+        "capability_drop",
+        "cgroup_v2",
+        "namespaces",
+        "seccomp"
+      ],
+      "seccomp_profile": "block_io_v1",
+      "state": "running"
+    },
+    {
+      "detail": {
+        "egress_transport": "guest_owned_tcp_udp_http_https_nat_v1",
+        "guest_control_ready": true,
+        "guest_exec_route_available": false,
+        "host_relay_egress_ready": true,
+        "ingress_http_ready": false,
+        "ingress_tcp_ready": false,
+        "ingress_transport": "guest_owned_tcp_udp_http_nat_v1",
+        "ingress_udp_ready": false,
+        "internet_nat": true,
+        "network_mode": "guest_owned_usernet_nat",
+        "ssh_available": false,
+        "virtio_net_mmio_present": true
+      },
+      "execution_scope": "virtio_net_observation",
+      "name": "net",
+      "observed_pid": 2213271,
+      "process_binding": "shared_runner_process",
+      "sandbox_contract_source": "launch_contract",
+      "sandbox_enforcement_mode": "worker_contract",
+      "sandbox_layers": [
+        "capability_drop",
+        "cgroup_v2",
+        "namespaces",
+        "seccomp"
+      ],
+      "seccomp_profile": "net_io_v1",
+      "state": "running"
+    }
+  ]
+}

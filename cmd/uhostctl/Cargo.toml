@@ -1,0 +1,19 @@
+[package]
+name = "uhostctl"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "UHost operator CLI and release verification tool"
+readme = "../../README.md"
+repository = "https://github.com/5136-cloud/EXPERIMENT-UHOST"
+documentation = "https://github.com/5136-cloud/EXPERIMENT-UHOST/tree/main/docs"
+publish = false
+
+[dependencies]
+serde_json.workspace = true
+toml.workspace = true
+uhost-core = { path = "../../crates/uhost-core" }
+
+[dev-dependencies]
+tempfile.workspace = true

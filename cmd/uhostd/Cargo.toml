@@ -1,0 +1,56 @@
+[package]
+name = "uhostd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "UHost same-host control-plane daemon"
+readme = "../../README.md"
+repository = "https://github.com/5136-cloud/EXPERIMENT-UHOST"
+documentation = "https://github.com/5136-cloud/EXPERIMENT-UHOST/tree/main/docs"
+publish = false
+
+[dependencies]
+http.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+time.workspace = true
+tokio.workspace = true
+hyper.workspace = true
+uhost-api = { path = "../../crates/uhost-api" }
+uhost-core = { path = "../../crates/uhost-core" }
+uhost-runtime = { path = "../../crates/uhost-runtime" }
+uhost-store = { path = "../../crates/uhost-store" }
+uhost-svc-abuse = { path = "../../services/uhost-svc-abuse" }
+uhost-svc-billing = { path = "../../services/uhost-svc-billing" }
+uhost-svc-console = { path = "../../services/uhost-svc-console" }
+uhost-svc-container = { path = "../../services/uhost-svc-container" }
+uhost-svc-control = { path = "../../services/uhost-svc-control" }
+uhost-svc-data = { path = "../../services/uhost-svc-data" }
+uhost-svc-dns = { path = "../../services/uhost-svc-dns" }
+uhost-svc-governance = { path = "../../services/uhost-svc-governance" }
+uhost-svc-ha = { path = "../../services/uhost-svc-ha" }
+uhost-svc-identity = { path = "../../services/uhost-svc-identity" }
+uhost-svc-ingress = { path = "../../services/uhost-svc-ingress" }
+uhost-svc-lifecycle = { path = "../../services/uhost-svc-lifecycle" }
+uhost-svc-mail = { path = "../../services/uhost-svc-mail" }
+uhost-svc-netsec = { path = "../../services/uhost-svc-netsec" }
+uhost-svc-node = { path = "../../services/uhost-svc-node" }
+uhost-svc-notify = { path = "../../services/uhost-svc-notify" }
+uhost-svc-observe = { path = "../../services/uhost-svc-observe" }
+uhost-svc-policy = { path = "../../services/uhost-svc-policy" }
+uhost-svc-scheduler = { path = "../../services/uhost-svc-scheduler" }
+uhost-svc-secrets = { path = "../../services/uhost-svc-secrets" }
+uhost-svc-storage = { path = "../../services/uhost-svc-storage" }
+uhost-svc-stream = { path = "../../services/uhost-svc-stream" }
+uhost-svc-tenancy = { path = "../../services/uhost-svc-tenancy" }
+uhost-svc-uvm-control = { path = "../../services/uhost-svc-uvm-control" }
+uhost-svc-uvm-image = { path = "../../services/uhost-svc-uvm-image" }
+uhost-svc-uvm-node = { path = "../../services/uhost-svc-uvm-node" }
+uhost-svc-uvm-observe = { path = "../../services/uhost-svc-uvm-observe" }
+uhost-types = { path = "../../crates/uhost-types" }
+
+[dev-dependencies]
+serde_json.workspace = true
+tempfile.workspace = true
+uhost-testkit = { path = "../../crates/uhost-testkit" }

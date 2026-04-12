@@ -1,0 +1,1562 @@
+{
+  "schema_version": 1,
+  "service_catalog": [
+    {
+      "service_name": "abuse",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/abuse/remediation-cases",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/abuse/remediation-cases",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/abuse",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/abuse",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "billing",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/billing",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/billing",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "console",
+      "owner_process_roles": [
+        "all_in_one",
+        "edge"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/console",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/console",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "container",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/container",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/container",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "control",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/control",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/control",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "data",
+      "owner_process_roles": [
+        "all_in_one",
+        "worker"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/data",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/data",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/data/backups/{backup_id}/storage-lineage",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/data/restores/{restore_id}/storage-lineage",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "dns",
+      "owner_process_roles": [
+        "all_in_one",
+        "edge"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/dns",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/dns",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "governance",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/governance",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "control_read"
+        },
+        {
+          "claim": "/governance",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "mutate"
+        },
+        {
+          "claim": "/governance/retention-evaluate",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "read"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "ha",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/ha",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/ha",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "identity",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/identity",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/identity",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/identity",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "ingress",
+      "owner_process_roles": [
+        "all_in_one",
+        "edge"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/ingress",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/ingress",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "lifecycle",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/lifecycle",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/lifecycle",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "mail",
+      "owner_process_roles": [
+        "all_in_one",
+        "worker"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/mail",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/mail",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "netsec",
+      "owner_process_roles": [
+        "all_in_one",
+        "worker"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/netsec",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/netsec",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "node",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller",
+        "node_adjacent"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/node",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/node",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "notify",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/notify",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/notify",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "observe",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/observe",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/observe",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "policy",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/policy",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "control_read"
+        },
+        {
+          "claim": "/policy",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "mutate"
+        },
+        {
+          "claim": "/policy/evaluate",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "read"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "runtime-internal",
+      "owner_process_roles": [
+        "all_in_one",
+        "edge",
+        "controller",
+        "worker",
+        "node_adjacent"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/internal/runtime/routes",
+          "match_kind": "exact",
+          "surface": "internal",
+          "method_match": "any",
+          "request_class": "read"
+        },
+        {
+          "claim": "/internal/runtime/topology",
+          "match_kind": "exact",
+          "surface": "internal",
+          "method_match": "any",
+          "request_class": "read"
+        }
+      ],
+      "internal_route_audiences": [
+        {
+          "claim": "/internal/runtime/routes",
+          "match_kind": "exact",
+          "audience": "runtime"
+        },
+        {
+          "claim": "/internal/runtime/topology",
+          "match_kind": "exact",
+          "audience": "runtime"
+        }
+      ]
+    },
+    {
+      "service_name": "runtime-operator",
+      "owner_process_roles": [
+        "all_in_one",
+        "edge",
+        "controller",
+        "worker",
+        "node_adjacent"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/runtime/participants/tombstone",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_destructive"
+        },
+        {
+          "claim": "/runtime/participants/tombstone-history",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/runtime/participants/tombstone-history/aggregated",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "scheduler",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/scheduler",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/scheduler",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "secrets",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/secrets",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "control_read"
+        },
+        {
+          "claim": "/secrets",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "storage",
+      "owner_process_roles": [
+        "all_in_one",
+        "worker"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/storage/volumes/{volume_id}/snapshot-policy",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/storage/volumes/{volume_id}/recovery-point",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/storage/volumes/{volume_id}/recovery-history",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/storage/volumes/{volume_id}/restore-actions",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/storage/volumes/{volume_id}/restore-actions",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/storage/restore-actions/{action_id}",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/storage",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/storage",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "stream",
+      "owner_process_roles": [
+        "all_in_one",
+        "worker"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/stream",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/stream",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "tenancy",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/tenancy",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/tenancy",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "uvm-control",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/uvm",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/control/summary",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/templates",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/templates",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/instances",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/instances",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/snapshots",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/snapshots",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/migrations",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/migrations",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/reconciliation",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/reconciliation",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/outbox",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/outbox",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "uvm-image",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/uvm/image",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/images",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/images",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/firmware-bundles",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/firmware-bundles",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/guest-profiles",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/guest-profiles",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/overlay-policies",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/overlay-policies",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/region-cell-policies",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/region-cell-policies",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/compatibility-matrix",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/compatibility-matrix",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/image-outbox",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/image-outbox",
+          "match_kind": "prefix",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "uvm-node",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller",
+        "node_adjacent"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/uvm/node",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/node-capabilities",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/node-capabilities",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/node-capabilities",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/node-capabilities",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/device-profiles",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/device-profiles",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/node-operations",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/node-operations",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/node-drains",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/node-drains",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/runtime/preflight",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "safe",
+          "request_class": "read"
+        },
+        {
+          "claim": "/uvm/runtime/preflight",
+          "match_kind": "exact",
+          "surface": "tenant",
+          "method_match": "unsafe",
+          "request_class": "async_mutate"
+        },
+        {
+          "claim": "/uvm/runtime",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/runtime",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/node-outbox",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/node-outbox",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    },
+    {
+      "service_name": "uvm-observe",
+      "owner_process_roles": [
+        "all_in_one",
+        "controller"
+      ],
+      "route_surfaces": [
+        {
+          "claim": "/uvm/observe",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/observe/summary",
+          "match_kind": "exact",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/perf-attestations",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/perf-attestations",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/failure-reports",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/failure-reports",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/host-evidence",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/host-evidence",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/preflight-evidence-artifacts",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/preflight-evidence-artifacts",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/claim-decisions",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/claim-decisions",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/benchmark-campaigns",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/benchmark-campaigns",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/benchmark-baselines",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/benchmark-baselines",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/benchmark-results",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/benchmark-results",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/native-claim-status",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/native-claim-status",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        },
+        {
+          "claim": "/uvm/observe-outbox",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "safe",
+          "request_class": "operator_read"
+        },
+        {
+          "claim": "/uvm/observe-outbox",
+          "match_kind": "prefix",
+          "surface": "operator",
+          "method_match": "unsafe",
+          "request_class": "operator_mutate"
+        }
+      ],
+      "internal_route_audiences": []
+    }
+  ],
+  "deployment_descriptors": [
+    {
+      "process_role": "all_in_one",
+      "activated_service_names": [
+        "abuse",
+        "billing",
+        "console",
+        "container",
+        "control",
+        "data",
+        "dns",
+        "governance",
+        "ha",
+        "identity",
+        "ingress",
+        "lifecycle",
+        "mail",
+        "netsec",
+        "node",
+        "notify",
+        "observe",
+        "policy",
+        "runtime-internal",
+        "runtime-operator",
+        "scheduler",
+        "secrets",
+        "storage",
+        "stream",
+        "tenancy",
+        "uvm-control",
+        "uvm-image",
+        "uvm-node",
+        "uvm-observe"
+      ],
+      "service_groups": [
+        {
+          "group": "edge",
+          "services": [
+            "console",
+            "dns",
+            "ingress"
+          ]
+        },
+        {
+          "group": "identity_and_policy",
+          "services": [
+            "identity",
+            "policy",
+            "secrets",
+            "tenancy"
+          ]
+        },
+        {
+          "group": "control",
+          "services": [
+            "container",
+            "control",
+            "ha",
+            "lifecycle",
+            "node",
+            "scheduler"
+          ]
+        },
+        {
+          "group": "data_and_messaging",
+          "services": [
+            "data",
+            "mail",
+            "netsec",
+            "storage",
+            "stream"
+          ]
+        },
+        {
+          "group": "governance_and_operations",
+          "services": [
+            "abuse",
+            "billing",
+            "governance",
+            "notify",
+            "observe"
+          ]
+        },
+        {
+          "group": "uvm",
+          "services": [
+            "uvm-control",
+            "uvm-image",
+            "uvm-node",
+            "uvm-observe"
+          ]
+        }
+      ],
+      "forwardable_non_local_service_names": []
+    },
+    {
+      "process_role": "edge",
+      "activated_service_names": [
+        "console",
+        "dns",
+        "ingress",
+        "runtime-internal",
+        "runtime-operator"
+      ],
+      "service_groups": [
+        {
+          "group": "edge",
+          "services": [
+            "console",
+            "dns",
+            "ingress"
+          ]
+        }
+      ],
+      "forwardable_non_local_service_names": [
+        "abuse",
+        "billing",
+        "container",
+        "control",
+        "data",
+        "governance",
+        "ha",
+        "identity",
+        "lifecycle",
+        "mail",
+        "netsec",
+        "node",
+        "notify",
+        "observe",
+        "policy",
+        "scheduler",
+        "secrets",
+        "storage",
+        "stream",
+        "tenancy",
+        "uvm-control",
+        "uvm-image",
+        "uvm-node",
+        "uvm-observe"
+      ]
+    },
+    {
+      "process_role": "controller",
+      "activated_service_names": [
+        "abuse",
+        "billing",
+        "container",
+        "control",
+        "governance",
+        "ha",
+        "identity",
+        "lifecycle",
+        "node",
+        "notify",
+        "observe",
+        "policy",
+        "runtime-internal",
+        "runtime-operator",
+        "scheduler",
+        "secrets",
+        "tenancy",
+        "uvm-control",
+        "uvm-image",
+        "uvm-node",
+        "uvm-observe"
+      ],
+      "service_groups": [
+        {
+          "group": "identity_and_policy",
+          "services": [
+            "identity",
+            "policy",
+            "secrets",
+            "tenancy"
+          ]
+        },
+        {
+          "group": "control",
+          "services": [
+            "container",
+            "control",
+            "ha",
+            "lifecycle",
+            "node",
+            "scheduler"
+          ]
+        },
+        {
+          "group": "governance_and_operations",
+          "services": [
+            "abuse",
+            "billing",
+            "governance",
+            "notify",
+            "observe"
+          ]
+        },
+        {
+          "group": "uvm",
+          "services": [
+            "uvm-control",
+            "uvm-image",
+            "uvm-node",
+            "uvm-observe"
+          ]
+        }
+      ],
+      "forwardable_non_local_service_names": [
+        "console",
+        "data",
+        "dns",
+        "ingress",
+        "mail",
+        "netsec",
+        "storage",
+        "stream"
+      ]
+    },
+    {
+      "process_role": "worker",
+      "activated_service_names": [
+        "data",
+        "mail",
+        "netsec",
+        "runtime-internal",
+        "runtime-operator",
+        "storage",
+        "stream"
+      ],
+      "service_groups": [
+        {
+          "group": "data_and_messaging",
+          "services": [
+            "data",
+            "mail",
+            "netsec",
+            "storage",
+            "stream"
+          ]
+        }
+      ],
+      "forwardable_non_local_service_names": [
+        "abuse",
+        "billing",
+        "console",
+        "container",
+        "control",
+        "dns",
+        "governance",
+        "ha",
+        "identity",
+        "ingress",
+        "lifecycle",
+        "node",
+        "notify",
+        "observe",
+        "policy",
+        "scheduler",
+        "secrets",
+        "tenancy",
+        "uvm-control",
+        "uvm-image",
+        "uvm-node",
+        "uvm-observe"
+      ]
+    },
+    {
+      "process_role": "node_adjacent",
+      "activated_service_names": [
+        "node",
+        "runtime-internal",
+        "runtime-operator",
+        "uvm-node"
+      ],
+      "service_groups": [
+        {
+          "group": "control",
+          "services": [
+            "node"
+          ]
+        },
+        {
+          "group": "uvm",
+          "services": [
+            "uvm-node"
+          ]
+        }
+      ],
+      "forwardable_non_local_service_names": [
+        "abuse",
+        "billing",
+        "console",
+        "container",
+        "control",
+        "data",
+        "dns",
+        "governance",
+        "ha",
+        "identity",
+        "ingress",
+        "lifecycle",
+        "mail",
+        "netsec",
+        "notify",
+        "observe",
+        "policy",
+        "scheduler",
+        "secrets",
+        "storage",
+        "stream",
+        "tenancy",
+        "uvm-control",
+        "uvm-image",
+        "uvm-observe"
+      ]
+    }
+  ]
+}

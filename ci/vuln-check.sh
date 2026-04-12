@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+denylist="${root_dir}/ci/vuln-denylist.txt"
+lock_file="${root_dir}/Cargo.lock"
+
+cd "${root_dir}"
+
+if [[ ! -f "${denylist}" ]]; then
+  echo "Vulnerability denylist not found: ${denylist}" >&2
+  exit 1
+fi
+
+if [[ ! -f "${lock_file}" ]]; then
+  echo "Cargo.lock not found" >&2
+  exit 1
+fi
+
+declare -A denied
+while read -r crate version reason; do
+  if [[ -z "${crate}" || "${crate}" == \#* ]]; then
+    continue
+  fi
+  denied["${crate}@${version}"]="${reason:-denied}"
+done < "${denylist}"
+
+found_issue="false"
+current_name=""
+current_version=""
+while IFS= read -r line; do
+  if [[ "${line}" =~ ^name\ =\ \"([^\"]+)\"$ ]]; then
+    current_name="${BASH_REMATCH[1]}"
+  elif [[ "${line}" =~ ^version\ =\ \"([^\"]+)\"$ ]]; then
+    current_version="${BASH_REMATCH[1]}"
+    key="${current_name}@${current_version}"
+    if [[ -n "${denied[${key}]:-}" ]]; then
+      echo "Denied dependency detected: ${key} (${denied[${key}]})"
+      found_issue="true"
+    fi
+  fi
+done < "${lock_file}"
+
+if ! command -v cargo-audit >/dev/null 2>&1; then
+  echo "cargo-audit must be installed for the vulnerability gate" >&2
+  exit 1
+fi
+
+echo "Running cargo-audit..."
+cargo audit --deny warnings
+
+if [[ "${found_issue}" == "true" ]]; then
+  echo "Vulnerability denylist gate failed"
+  exit 1
+fi
+
+echo "Vulnerability checks passed"

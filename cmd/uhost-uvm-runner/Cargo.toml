@@ -1,0 +1,18 @@
+[package]
+name = "uhost-uvm-runner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "UHost UVM runner and evidence harness"
+readme = "../../README.md"
+repository = "https://github.com/5136-cloud/EXPERIMENT-UHOST"
+documentation = "https://github.com/5136-cloud/EXPERIMENT-UHOST/tree/main/docs"
+publish = false
+
+[dependencies]
+serde_json.workspace = true
+uhost-core = { path = "../../crates/uhost-core" }
+uhost-uvm = { path = "../../crates/uhost-uvm" }
+uhost-uvm-machine = { path = "../../crates/uhost-uvm-machine" }
+uhost-uvm-softvm = { path = "../../crates/uhost-uvm-softvm" }

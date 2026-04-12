@@ -1,0 +1,11 @@
+[build]
+target-dir = "target"
+
+[term]
+verbose = false
+
+[target.'cfg(all())']
+rustflags = [
+    "-Dwarnings",
+    "-Cdebuginfo=1",
+]

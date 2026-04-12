@@ -1,0 +1,17 @@
+#!/bin/sh
+#
+# PROVIDE: uhostd
+# REQUIRE: NETWORKING
+#
+
+. /etc/rc.subr
+
+name="uhostd"
+rcvar=uhostd_enable
+command="/usr/local/project-uhost/bin/uhostd"
+command_args="--config /usr/local/etc/project-uhost/all-in-one.toml"
+
+load_rc_config $name
+: ${uhostd_enable:=NO}
+
+run_rc_command "$1"

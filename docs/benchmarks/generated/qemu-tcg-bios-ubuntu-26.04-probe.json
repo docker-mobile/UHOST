@@ -1,0 +1,17 @@
+{
+  "iso_path": "tmp/boot-probes/resolute-live-server-amd64.iso",
+  "firmware": "/usr/share/seabios/bios.bin",
+  "bios_probe_exit_code": 124,
+  "boot_menu_detected": true,
+  "bios_installer_strings_detected": true,
+  "kernel_probe_exit_code": 124,
+  "kernel_boot_text_detected": true,
+  "kernel_installer_progress_detected": true,
+  "casper_cdrom_mismatch_detected": false,
+  "kernel_panic_detected": false,
+  "userspace_targets_detected": true,
+  "serial_login_prompt_detected": true,
+  "raw_log": "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.raw.log",
+  "text_log": "docs/benchmarks/generated/qemu-tcg-bios-ubuntu-26.04-probe.log",
+  "kernel_log": "docs/benchmarks/generated/qemu-tcg-kernel-ubuntu-26.04-probe.log"
+}
