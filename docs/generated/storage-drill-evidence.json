@@ -1,0 +1,63 @@
+{
+  "bundle": "storage-restore-replication-failover-drill-evidence",
+  "drill": {
+    "active_node_id": "nod_hbnzmixxvosrq7slliupkugsirgbs",
+    "backing_volume_id": "vol_snhoeghxvosrrc3b2tg2iciwkjwae",
+    "backup_id": "aud_owoyigxxvosrrb6nii3mefiznxq6c",
+    "backup_recovery_point_etag": "5438a075ff32f3a22307773778fc1c107c4331152091f0ac3c77ff0add220492",
+    "backup_recovery_point_version": 1,
+    "backup_snapshot_uri": "object://data/backups/dbs_iug6aghxvosrrekmli2hajy2jleva/artifacts/aud_owoyigxxvosrrb6nii3mefiznxq6c/payload.json",
+    "data_outbox_event_types": [
+      "data.database.backup.completed.v1",
+      "data.database.created.v1",
+      "data.database.restore.completed.v1"
+    ],
+    "database_id": "dbs_iug6aghxvosrrekmli2hajy2jleva",
+    "failover_drill_id": "fov_n5isojpxvosrqhsxau3yyeoerjwj2",
+    "failover_operation_kind": "drill",
+    "failover_state": "completed",
+    "ha_outbox_event_types": [
+      "ha.failover.drill.completed.v1",
+      "ha.failover.drill.started.v1",
+      "ha.quorum.updated.v1",
+      "ha.replication.updated.v1",
+      "ha.role.updated.v1"
+    ],
+    "passive_node_id": "nod_xgazmixxvosrqtl7f2grqqt4es6yo",
+    "preflight_allowed": true,
+    "preflight_observed_replication_lag_seconds": 2,
+    "replication_lag_seconds": 2,
+    "restore_id": "aud_ifiyqhhxvosrruase4feudk74sbla",
+    "restore_state": "completed",
+    "storage_restore_action_id": "aud_ozlxchpxvosrrdmjb22encvhjsh7i",
+    "storage_restore_recovery_point_captured_at": "2026-04-12T17:25:05.844763004Z",
+    "storage_restore_recovery_point_etag": "5438a075ff32f3a22307773778fc1c107c4331152091f0ac3c77ff0add220492",
+    "storage_restore_recovery_point_version": 1,
+    "storage_restore_selection_reason": "selected backup-correlated storage recovery point recorded by the originating backup",
+    "storage_restore_source_mode": "backup_correlated_storage_lineage",
+    "storage_restore_workflow_id": "aud_ozlxchpxvosrrdmjb22encvhjsh7i"
+  },
+  "generated_at": "2026-04-12T17:25:06.224278645Z",
+  "generator": {
+    "command": "bash scripts/run-storage-drill-evidence.sh",
+    "generated_directory": "docs/generated",
+    "script": "scripts/run-storage-drill-evidence.sh",
+    "script_sha256": "1317ae5b3f17b1cb33572ffb3d47dc0c626b7176bbdabe01e62ad15e8f100784"
+  },
+  "notes": [
+    "This artifact is generated from a live all-in-one rehearsal that spans data restore and HA drill flows.",
+    "Refresh the bundle after the rehearsal path, generator script, or focused gate changes."
+  ],
+  "schema_version": 1,
+  "verification": {
+    "focused_gate": {
+      "path": "ci/check-storage-drill-evidence.sh",
+      "sha256": "1f9bba8a3068635bfd0120167973fe2ddd820953525f407779c2735946585d91"
+    },
+    "integration_test": {
+      "path": "cmd/uhostd/tests/storage_drill_evidence.rs",
+      "sha256": "6311fbffa54f45b160211c8e74a29beba07a37155a1eca863900cf42705b100b",
+      "test_name": "combined_storage_drill_rehearsal_exercises_restore_replication_and_failover"
+    }
+  }
+}
