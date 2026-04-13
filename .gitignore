@@ -29,6 +29,8 @@ tmp/
 /docs/generated/*
 !/docs/generated/release-state.json
 !/docs/generated/release-state.md
+!/docs/generated/storage-drill-evidence.json
+!/docs/generated/storage-drill-evidence.md
 /plans/full-remaining-checklist.md
 /plans/swarm-execution-board.md
 /plans/company-execution-program.md

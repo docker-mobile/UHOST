@@ -1,0 +1,8 @@
+# Format:
+# advisory_id reason
+#
+# This file is for temporary cargo-audit advisory exceptions that are scoped and
+# intentionally reviewed. Prefer removing entries by updating or eliminating the
+# affected dependency path.
+
+RUSTSEC-2026-0097 dev-only via proptest test graphs; remove when upstream no longer resolves rand-0.9.2

@@ -6,8 +6,8 @@ license.workspace = true
 rust-version.workspace = true
 description = "File-backed durability primitives for UHost"
 readme = "../README.md"
-repository = "https://github.com/5136-cloud/EXPERIMENT-UHOST"
-documentation = "https://github.com/5136-cloud/EXPERIMENT-UHOST/tree/main/docs"
+repository = "https://github.com/docker-mobile/UHOST"
+documentation = "https://github.com/docker-mobile/UHOST/tree/main/docs"
 publish = false
 
 [dependencies]
