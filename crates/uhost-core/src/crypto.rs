@@ -10,13 +10,12 @@ use base64::Engine;
 use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{ChaCha20Poly1305, Key, Nonce};
-use hmac::{Hmac, Mac};
 use sha2::{Digest, Sha256};
 
 use crate::error::{PlatformError, Result};
 use crate::secret::{SecretBytes, SecretString};
 
-type HmacSha256 = Hmac<Sha256>;
+const SHA256_BLOCK_SIZE: usize = 64;
 
 /// Generate cryptographically secure random bytes.
 pub fn random_bytes(length: usize) -> Result<Vec<u8>> {
@@ -52,11 +51,34 @@ pub fn sha256_hex(bytes: &[u8]) -> String {
 
 /// Compute an HMAC-SHA256 digest.
 pub fn hmac_sha256(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
-    let mut mac = <HmacSha256 as Mac>::new_from_slice(key).map_err(|error| {
-        PlatformError::invalid("invalid HMAC key").with_detail(error.to_string())
-    })?;
-    mac.update(data);
-    Ok(mac.finalize().into_bytes().to_vec())
+    // Keep HMAC explicit so the helper is stable across digest crate major
+    // transitions instead of inheriting version-coupled trait breakage.
+    let mut normalized_key = [0_u8; SHA256_BLOCK_SIZE];
+    if key.len() > SHA256_BLOCK_SIZE {
+        let digest = Sha256::digest(key);
+        normalized_key[..digest.len()].copy_from_slice(&digest);
+    } else {
+        normalized_key[..key.len()].copy_from_slice(key);
+    }
+
+    let mut inner_pad = [0x36_u8; SHA256_BLOCK_SIZE];
+    let mut outer_pad = [0x5c_u8; SHA256_BLOCK_SIZE];
+    for (pad, key_byte) in inner_pad.iter_mut().zip(normalized_key.iter()) {
+        *pad ^= *key_byte;
+    }
+    for (pad, key_byte) in outer_pad.iter_mut().zip(normalized_key.iter()) {
+        *pad ^= *key_byte;
+    }
+
+    let mut inner = Sha256::new();
+    inner.update(inner_pad);
+    inner.update(data);
+    let inner_digest = inner.finalize();
+
+    let mut outer = Sha256::new();
+    outer.update(outer_pad);
+    outer.update(inner_digest);
+    Ok(outer.finalize().to_vec())
 }
 
 /// Hash a password using Argon2id with a random salt.
@@ -120,4 +142,23 @@ pub fn unseal_secret(key: &SecretBytes, sealed: &str) -> Result<SecretString> {
         PlatformError::invalid("decrypted secret is not valid UTF-8").with_detail(error.to_string())
     })?;
     Ok(SecretString::new(text))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::hmac_sha256;
+
+    #[test]
+    fn hmac_sha256_matches_rfc_4231_case_1() {
+        let key = [0x0b_u8; 20];
+        let digest = hmac_sha256(&key, b"Hi There").expect("HMAC should succeed");
+        let hex = digest
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect::<String>();
+        assert_eq!(
+            hex,
+            "b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7"
+        );
+    }
 }
