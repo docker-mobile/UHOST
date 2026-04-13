@@ -1240,7 +1240,7 @@ dependencies = [
  "argon2",
  "base64",
  "chacha20poly1305",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "hmac",
  "proptest",
  "serde",
@@ -1356,7 +1356,7 @@ name = "uhost-svc-container"
 version = "0.1.0"
 dependencies = [
  "bytes",
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "http",
  "http-body-util",
  "hyper",
@@ -1855,7 +1855,7 @@ dependencies = [
 name = "uhost-types"
 version = "0.1.0"
 dependencies = [
- "getrandom 0.3.4",
+ "getrandom 0.4.2",
  "serde",
  "serde_json",
  "time",
