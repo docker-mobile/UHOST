@@ -1,0 +1,29 @@
+name: Feature request
+description: Propose a platform, runtime, UVM, or operator workflow improvement.
+title: "[feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What operator or platform problem are you trying to solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+      description: Describe the desired API, workflow, or behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: contracts
+    attributes:
+      label: Contract or state impact
+      description: Note any OpenAPI, protobuf, config, or durable-state implications.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered

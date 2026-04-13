@@ -1,0 +1,45 @@
+name: Bug report
+description: Report a runtime, API, state, or tooling defect.
+title: "[bug] "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the defect and its impact.
+      placeholder: The control plane returns 500 when...
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Host OS, runtime mode, and relevant config.
+      placeholder: Ubuntu 26.04, all-in-one config, software_dbt UVM...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Exact steps, commands, or API requests.
+      placeholder: |
+        1. Start `uhostd` with...
+        2. Run `uhostctl ...`
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or evidence
+      description: Paste relevant output, request ids, or artifact references.
+      render: shell

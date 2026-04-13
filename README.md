@@ -2,6 +2,10 @@
   <h1>UHost</h1>
   <p><strong>Dependency-lean hosting control plane and software-first UVM stack.</strong></p>
   <p>
+    <a href="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/ci.yml/badge.svg"></a>
+    <a href="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/release.yml"><img alt="Release" src="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/release.yml/badge.svg"></a>
+  </p>
+  <p>
     <code>Rust workspace</code>
     <code>v0.1 beta</code>
     <code>same-host runtime</code>
@@ -137,6 +141,8 @@ ci/          repository gates
 - [Runbooks](docs/runbooks/README.md)
 - [Managed UVM Dev Quickstart](docs/runbooks/managed-uvm-dev-quickstart.md)
 - [UVM Virtualization Stack](docs/uvm-virtualization-stack.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security Policy](SECURITY.md)
 
 ## Current Scope
 
@@ -148,3 +154,12 @@ UHost is ready to be presented as a normal beta when described as:
 - and an active UVM engineering program with explicit evidence and limits.
 
 That is the story this repository should tell.
+
+## GitHub Surface
+
+The repository ships with:
+
+- CI in [`.github/workflows/ci.yml`](.github/workflows/ci.yml)
+- release automation in [`.github/workflows/release.yml`](.github/workflows/release.yml)
+- issue templates and pull-request templates under [`.github`](.github)
+- dependency update automation in [`.github/dependabot.yml`](.github/dependabot.yml)

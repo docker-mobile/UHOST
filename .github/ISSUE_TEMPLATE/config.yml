@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: UHost documentation
+    url: https://github.com/docker-mobile/EXPERIMENT-UHOST/tree/main/docs
+    about: Read architecture, runbooks, and roadmap docs before opening a ticket.
