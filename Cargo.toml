@@ -48,7 +48,7 @@ version = "0.1.0"
 license = "Apache-2.0"
 rust-version = "1.94"
 authors = ["Project UHost Contributors"]
-repository = "https://example.invalid/uhost"
+repository = "https://github.com/docker-mobile/EXPERIMENT-UHOST"
 
 [workspace.dependencies]
 argon2 = "0.5"
