@@ -1423,6 +1423,14 @@ async fn sync_path_parent(path: &Path) -> Result<()> {
     Ok(())
 }
 
+#[cfg(windows)]
+async fn sync_directory(_path: &Path) -> Result<()> {
+    // Tokio cannot reopen directories on Windows the same way Unix can for a
+    // durable parent-directory fsync, so keep this best-effort there.
+    Ok(())
+}
+
+#[cfg(not(windows))]
 async fn sync_directory(path: &Path) -> Result<()> {
     let directory = File::open(path).await.map_err(|error| {
         PlatformError::unavailable("failed to open blob parent directory")

@@ -1316,33 +1316,16 @@ fn all_in_one_end_to_end_flow() {
             .unwrap_or_else(|| panic!("missing confirmed lifecycle dead-letter replay state"))
     );
 
-    let uvm_accelerator_backends = if cfg!(target_os = "linux") {
-        r#"["kvm"]"#
-    } else if cfg!(target_os = "windows") {
-        r#"["hyperv_whp"]"#
-    } else if cfg!(target_os = "macos") {
-        r#"["apple_virtualization"]"#
-    } else if cfg!(any(
-        target_os = "freebsd",
-        target_os = "openbsd",
-        target_os = "netbsd",
-        target_os = "dragonfly"
-    )) {
-        r#"["bhyve"]"#
-    } else {
-        r#"["kvm"]"#
-    };
-    let uvm_guest_architecture = if cfg!(target_os = "macos") {
-        "aarch64"
-    } else {
-        "x86_64"
-    };
+    // This integration test models a Linux accelerator node explicitly so the
+    // portability and live-migration contract stays stable across CI hosts.
+    let uvm_accelerator_backends = r#"["kvm"]"#;
+    let uvm_guest_architecture = "x86_64";
     let uvm_capability = request_json(
         address,
         "POST",
         "/uvm/node-capabilities",
         Some(&format!(
-            r#"{{"node_id":"{}","architecture":"{}","accelerator_backends":{},"max_vcpu":64,"max_memory_mb":131072,"numa_nodes":2,"supports_secure_boot":true,"supports_live_migration":true,"supports_pci_passthrough":true}}"#,
+            r#"{{"node_id":"{}","host_platform":"linux","architecture":"{}","accelerator_backends":{},"max_vcpu":64,"max_memory_mb":131072,"numa_nodes":2,"supports_secure_boot":true,"supports_live_migration":true,"supports_pci_passthrough":true}}"#,
             active["id"]
                 .as_str()
                 .unwrap_or_else(|| panic!("missing active node id")),
@@ -1355,7 +1338,7 @@ fn all_in_one_end_to_end_flow() {
         "POST",
         "/uvm/node-capabilities",
         Some(&format!(
-            r#"{{"node_id":"{}","architecture":"{}","accelerator_backends":{},"max_vcpu":64,"max_memory_mb":131072,"numa_nodes":2,"supports_secure_boot":true,"supports_live_migration":true,"supports_pci_passthrough":true}}"#,
+            r#"{{"node_id":"{}","host_platform":"linux","architecture":"{}","accelerator_backends":{},"max_vcpu":64,"max_memory_mb":131072,"numa_nodes":2,"supports_secure_boot":true,"supports_live_migration":true,"supports_pci_passthrough":true}}"#,
             passive["id"]
                 .as_str()
                 .unwrap_or_else(|| panic!("missing passive node id")),
