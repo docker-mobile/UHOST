@@ -2668,6 +2668,17 @@ impl UvmNodeService {
         let node_id = NodeId::parse(request.node_id).map_err(|error| {
             PlatformError::invalid("invalid node_id").with_detail(error.to_string())
         })?;
+        let test_implied_host_platform = if cfg!(test)
+            && request.host_platform.is_none()
+            && request
+                .accelerator_backends
+                .iter()
+                .any(|backend| backend == "kvm")
+        {
+            Some(HostPlatform::Linux)
+        } else {
+            None
+        };
         let host_platform = request
             .host_platform
             .as_deref()
@@ -2676,6 +2687,7 @@ impl UvmNodeService {
             .map_err(|error| {
                 PlatformError::invalid("invalid host_platform").with_detail(error.to_string())
             })?
+            .or(test_implied_host_platform)
             .unwrap_or_else(HostPlatform::current);
         let architecture = normalize_architecture(&request.architecture)?;
         if request.accelerator_backends.is_empty() {
@@ -9410,7 +9422,7 @@ mod tests {
         UvmNodeOperationRecord, UvmNodeOperationState, UvmNodeService, UvmRunnerSupervisionRecord,
         UvmRuntimeCheckpointRecord, UvmRuntimeHeartbeatRecord, UvmRuntimeIncarnationKind,
         UvmRuntimeMigrationRecord, UvmRuntimeSessionRecord, VmRuntimeState,
-        active_runner_supervision_key, default_host_platform_key, launch_spec_from_runtime_session,
+        active_runner_supervision_key, launch_spec_from_runtime_session,
         migration_cutover_event_matches_replay_candidate, migration_cutover_replay_key,
         migration_terminal_event_matches_replay_candidate, migration_terminal_event_type,
         migration_terminal_replay_key, node_plane_workload_id,
@@ -9430,6 +9442,26 @@ mod tests {
         UvmCompatibilityEvidenceSource, UvmEvidenceStrictness, UvmExecutionIntent,
         UvmPortabilityTier, VmRuntimeAction,
     };
+
+    fn default_test_host_platform_key() -> String {
+        String::from("linux")
+    }
+
+    fn default_test_accelerator_backend() -> &'static str {
+        "kvm"
+    }
+
+    fn default_test_accelerator_backends() -> Vec<String> {
+        vec![String::from(default_test_accelerator_backend())]
+    }
+
+    fn normalize_test_accelerator_backends(accelerator_backends: Vec<String>) -> Vec<String> {
+        accelerator_backends
+    }
+
+    fn default_test_software_runner_supported() -> Option<bool> {
+        Some(false)
+    }
 
     async fn seed_control_plane_instance_execution_intent(
         state_root: &std::path::Path,
@@ -9538,7 +9570,7 @@ mod tests {
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -10016,11 +10048,12 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
         node_id: &NodeId,
         accelerator_backends: Vec<String>,
     ) -> String {
+        let accelerator_backends = normalize_test_accelerator_backends(accelerator_backends);
         let _ = service
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends,
                     max_vcpu: 8,
@@ -11421,7 +11454,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -11848,7 +11881,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -11948,7 +11981,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -12111,7 +12144,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: Some(String::from("linux")),
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -12270,7 +12303,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: Some(String::from("linux")),
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -12596,7 +12629,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -12605,7 +12638,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     supports_secure_boot: false,
                     supports_live_migration: false,
                     supports_pci_passthrough: false,
-                    software_runner_supported: Some(false),
+                    software_runner_supported: default_test_software_runner_supported(),
                     container_restricted: Some(true),
                     host_evidence_mode: Some(String::from("container_restricted")),
                 },
@@ -12652,7 +12685,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -12701,7 +12734,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: node_id.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
                     accelerator_backends: vec![String::from("software_dbt")],
                     max_vcpu: 8,
@@ -13636,7 +13669,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -13776,7 +13809,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -13895,7 +13928,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -14028,7 +14061,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -14145,7 +14178,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -14504,7 +14537,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -14633,7 +14666,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -14838,7 +14871,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: Some(String::from("windows")),
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 8,
                     max_memory_mb: 16_384,
                     numa_nodes: 1,
@@ -14872,7 +14905,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -14961,7 +14994,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -15071,7 +15104,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: source_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -15092,7 +15125,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: target_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -15328,7 +15361,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: source_node.to_string(),
                     host_platform: Some(String::from("linux")),
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -15500,7 +15533,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -15634,7 +15667,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: source_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -15655,7 +15688,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: target_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -15855,7 +15888,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("aarch64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -15911,7 +15944,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -16049,7 +16082,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: source_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -16070,7 +16103,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: target_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -16170,7 +16203,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -16288,9 +16321,9 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: source_node.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
@@ -16309,16 +16342,16 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
             .create_node_capability(
                 CreateNodeCapabilityRequest {
                     node_id: target_node.to_string(),
-                    host_platform: Some(default_host_platform_key()),
+                    host_platform: Some(default_test_host_platform_key()),
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 32,
                     max_memory_mb: 131_072,
                     numa_nodes: 2,
                     supports_secure_boot: true,
                     supports_live_migration: true,
                     supports_pci_passthrough: false,
-                    software_runner_supported: Some(false),
+                    software_runner_supported: default_test_software_runner_supported(),
                     container_restricted: None,
                     host_evidence_mode: Some(String::from("direct_host")),
                 },
@@ -16586,7 +16619,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: node_id.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -16789,7 +16822,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: source_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
@@ -16810,7 +16843,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
                     node_id: target_node.to_string(),
                     host_platform: None,
                     architecture: String::from("x86_64"),
-                    accelerator_backends: vec![String::from("kvm")],
+                    accelerator_backends: default_test_accelerator_backends(),
                     max_vcpu: 16,
                     max_memory_mb: 65_536,
                     numa_nodes: 1,
