@@ -108,6 +108,9 @@ fn shared_write_guard(path: &Path) -> Arc<Mutex<()>> {
 }
 
 async fn secure_directory_permissions(path: &Path) -> Result<()> {
+    #[cfg(not(unix))]
+    let _ = path;
+
     #[cfg(unix)]
     {
         fs::set_permissions(path, std::fs::Permissions::from_mode(0o700))
@@ -121,6 +124,9 @@ async fn secure_directory_permissions(path: &Path) -> Result<()> {
 }
 
 async fn secure_file_permissions(path: &Path) -> Result<()> {
+    #[cfg(not(unix))]
+    let _ = path;
+
     #[cfg(unix)]
     {
         fs::set_permissions(path, std::fs::Permissions::from_mode(0o600))
@@ -134,6 +140,9 @@ async fn secure_file_permissions(path: &Path) -> Result<()> {
 }
 
 async fn sync_parent_dir(path: &Path) -> Result<()> {
+    #[cfg(not(unix))]
+    let _ = path;
+
     #[cfg(unix)]
     {
         if let Some(parent) = path.parent() {
