@@ -159,14 +159,13 @@ async fn sync_parent_dir(path: &Path) -> Result<()> {
     Ok(())
 }
 
-#[cfg(test)]
+#[cfg(all(test, unix))]
 mod tests {
     use serde_json::json;
     use tempfile::tempdir;
 
     use super::AuditLog;
 
-    #[cfg(unix)]
     #[tokio::test]
     async fn open_hardens_audit_log_file_and_directory_permissions() {
         use std::os::unix::fs::PermissionsExt;
