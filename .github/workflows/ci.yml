@@ -11,7 +11,7 @@ jobs:
   config-safety:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Config safety gate
         run: bash ci/config-safety-gate.sh
 
@@ -19,7 +19,7 @@ jobs:
     needs: config-safety
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Resolve pinned Rust toolchain
         id: rust-toolchain
         shell: bash
@@ -48,7 +48,7 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Normalize Rust source newlines on Windows
         if: runner.os == 'Windows'
         shell: bash
@@ -94,7 +94,7 @@ jobs:
     needs: [config-safety, vuln-check]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Resolve pinned Rust toolchain
         id: rust-toolchain
         shell: bash
@@ -117,7 +117,7 @@ jobs:
     needs: [config-safety, vuln-check]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Resolve pinned Rust toolchain
         id: rust-toolchain
         shell: bash
@@ -140,7 +140,7 @@ jobs:
     needs: [config-safety, vuln-check]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Resolve pinned Rust toolchain
         id: rust-toolchain
         shell: bash
