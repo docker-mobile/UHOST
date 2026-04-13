@@ -164,7 +164,7 @@ jobs:
       - name: Supply-chain gate
         run: bash ci/supply-chain-gate.sh
       - name: Upload supply-chain artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: supply-chain-artifacts
           path: |

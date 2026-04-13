@@ -50,7 +50,7 @@ jobs:
           tar -C dist -czf "uhost-${GITHUB_REF_NAME:-manual}-linux-amd64.tar.gz" .
 
       - name: Upload packaged artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-artifacts
           path: |
