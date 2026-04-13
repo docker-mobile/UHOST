@@ -2,8 +2,8 @@
   <h1>UHost</h1>
   <p><strong>Dependency-lean hosting control plane and software-first UVM stack.</strong></p>
   <p>
-    <a href="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/ci.yml/badge.svg"></a>
-    <a href="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/release.yml"><img alt="Release" src="https://github.com/docker-mobile/EXPERIMENT-UHOST/actions/workflows/release.yml/badge.svg"></a>
+    <a href="https://github.com/docker-mobile/UHOST/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/docker-mobile/UHOST/actions/workflows/ci.yml/badge.svg"></a>
+    <a href="https://github.com/docker-mobile/UHOST/actions/workflows/release.yml"><img alt="Release" src="https://github.com/docker-mobile/UHOST/actions/workflows/release.yml/badge.svg"></a>
   </p>
   <p>
     <code>Rust workspace</code>

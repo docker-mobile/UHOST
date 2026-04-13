@@ -3,12 +3,18 @@ set -euo pipefail
 
 root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 denylist="${root_dir}/ci/vuln-denylist.txt"
+audit_ignorelist="${root_dir}/ci/vuln-audit-ignore.txt"
 lock_file="${root_dir}/Cargo.lock"
 
 cd "${root_dir}"
 
 if [[ ! -f "${denylist}" ]]; then
   echo "Vulnerability denylist not found: ${denylist}" >&2
+  exit 1
+fi
+
+if [[ ! -f "${audit_ignorelist}" ]]; then
+  echo "Vulnerability audit ignorelist not found: ${audit_ignorelist}" >&2
   exit 1
 fi
 
@@ -24,6 +30,14 @@ while read -r crate version reason; do
   fi
   denied["${crate}@${version}"]="${reason:-denied}"
 done < "${denylist}"
+
+declare -a audit_ignore_args=()
+while read -r advisory_id reason; do
+  if [[ -z "${advisory_id}" || "${advisory_id}" == \#* ]]; then
+    continue
+  fi
+  audit_ignore_args+=(--ignore "${advisory_id}")
+done < "${audit_ignorelist}"
 
 found_issue="false"
 current_name=""
@@ -47,7 +61,7 @@ if ! command -v cargo-audit >/dev/null 2>&1; then
 fi
 
 echo "Running cargo-audit..."
-cargo audit --deny warnings
+cargo audit --deny warnings "${audit_ignore_args[@]}"
 
 if [[ "${found_issue}" == "true" ]]; then
   echo "Vulnerability denylist gate failed"
