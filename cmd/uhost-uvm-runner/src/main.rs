@@ -5899,7 +5899,17 @@ mod tests {
             .as_str()
             .unwrap_or_else(|| panic!("missing managed ingress url"))
             .to_owned();
-        let body = http_get_text(&ingress_url);
+        let deadline = std::time::Instant::now() + Duration::from_secs(2);
+        let body = loop {
+            let body = http_get_text(&ingress_url);
+            if body == "managed ingress works\n" {
+                break body;
+            }
+            if std::time::Instant::now() >= deadline {
+                break body;
+            }
+            thread::sleep(Duration::from_millis(50));
+        };
         assert_eq!(body, "managed ingress works\n");
 
         control_tx
