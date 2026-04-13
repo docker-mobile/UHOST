@@ -11649,6 +11649,7 @@ printf '{"event":"lifecycle","state":"stopped","session_id":"%s","instance_id":"
         );
     }
 
+    #[cfg(unix)]
     #[tokio::test]
     async fn runner_supervision_records_are_keyed_by_runtime_incarnation_and_survive_reopen() {
         let temp = tempdir().unwrap_or_else(|error| panic!("{error}"));
