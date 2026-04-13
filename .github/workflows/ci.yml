@@ -49,6 +49,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Normalize Rust source newlines on Windows
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib
+          import subprocess
+
+          files = subprocess.check_output(
+              ["git", "ls-files", "*.rs"], text=True
+          ).splitlines()
+          for relative_path in files:
+              path = pathlib.Path(relative_path)
+              raw = path.read_bytes()
+              normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+              if normalized != raw:
+                  path.write_bytes(normalized)
+          PY
       - name: Resolve pinned Rust toolchain
         id: rust-toolchain
         shell: bash
