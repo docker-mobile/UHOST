@@ -3,7 +3,7 @@
 use std::collections::{BTreeMap, HashMap};
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::{Arc, Mutex as StdMutex, OnceLock};
 use std::time::{Duration, Instant};
 
@@ -433,6 +433,10 @@ where
     }
 
     async fn read_collection_with_status(path: &Path) -> Result<(DocumentCollection<T>, bool)> {
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if path.components().any(|c| c == Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
         let raw = fs::read(path).await.map_err(|error| {
             PlatformError::unavailable("failed to read document collection")
                 .with_detail(format!("{} ({error})", path.display()))
@@ -793,6 +797,10 @@ pub(crate) async fn sync_parent_dir(path: &Path) -> Result<()> {
 
     #[cfg(unix)]
     {
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if path.components().any(|c| c == Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
         if let Some(parent) = path.parent() {
             let dir = fs::File::open(parent).await.map_err(|error| {
                 PlatformError::unavailable("failed to open document store directory for sync")

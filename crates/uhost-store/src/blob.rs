@@ -1177,6 +1177,10 @@ impl BlobStore {
     }
 
     async fn open_blob_file(&self, path: &Path, offset: u64) -> Result<File> {
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
         let mut file = File::open(path).await.map_err(|error| {
             PlatformError::unavailable("failed to open blob").with_detail(error.to_string())
         })?;
@@ -1432,6 +1436,10 @@ async fn sync_directory(_path: &Path) -> Result<()> {
 
 #[cfg(not(windows))]
 async fn sync_directory(path: &Path) -> Result<()> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+    }
     let directory = File::open(path).await.map_err(|error| {
         PlatformError::unavailable("failed to open blob parent directory")
             .with_detail(error.to_string())
