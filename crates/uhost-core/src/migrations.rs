@@ -217,6 +217,10 @@ pub fn find_migration_manifest<'a>(
 }
 
 fn collect_toml_files(root: &Path, output: &mut Vec<PathBuf>) -> Result<()> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if root.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", root.display())));
+    }
     let entries = fs::read_dir(root).map_err(|error| {
         PlatformError::unavailable("failed to read migration directory").with_detail(format!(
             "{}: {}",
@@ -231,6 +235,10 @@ fn collect_toml_files(root: &Path, output: &mut Vec<PathBuf>) -> Result<()> {
                 .with_detail(error.to_string())
         })?;
         let path = entry.path();
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
         let file_type =
             entry.file_type().map_err(|error| {
                 PlatformError::unavailable("failed to read migration path type")

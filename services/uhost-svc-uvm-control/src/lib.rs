@@ -2625,6 +2625,10 @@ impl UvmControlService {
             return Ok(None);
         };
         let path = platform_root.join(service_dir).join(file_name);
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
         if fs::metadata(&path).await.is_err() {
             return Ok(None);
         }

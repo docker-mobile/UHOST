@@ -5,7 +5,7 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use http::{Method, Request, StatusCode};
 use serde::{Deserialize, Serialize};
@@ -1311,6 +1311,10 @@ fn generated_validation_workspace_root(manifest_path: &Path) -> Result<PathBuf> 
 fn parse_generated_validation_manifest(
     manifest_path: &Path,
 ) -> Result<GeneratedValidationManifest> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if manifest_path.components().any(|c| c == Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", manifest_path.display())));
+    }
     let raw = fs::read_to_string(manifest_path).map_err(|error| {
         PlatformError::unavailable("failed to read generated validation manifest")
             .with_detail(format!("{}: {error}", manifest_path.display()))
@@ -1726,7 +1730,12 @@ fn generated_validation_report_from_manifest_entry(
     manifest: &GeneratedValidationManifest,
     entry: &GeneratedValidationArtifactManifestEntry,
 ) -> Result<GeneratedValidationReport> {
-    let report_path = if Path::new(&entry.path).is_absolute() {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    let entry_path = Path::new(&entry.path);
+    if entry_path.components().any(|c| c == Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", entry_path.display())));
+    }
+    let report_path = if entry_path.is_absolute() {
         PathBuf::from(&entry.path)
     } else {
         workspace_root.join(&entry.path)

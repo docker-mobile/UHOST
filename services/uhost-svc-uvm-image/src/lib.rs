@@ -4,7 +4,7 @@
 //! compatibility reporting for UVM guests.
 
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 
 use http::{Method, Request, StatusCode};
 use serde::{Deserialize, Serialize};
@@ -2601,6 +2601,13 @@ fn parse_file_uri_to_path(kind: &str, uri: &str) -> Result<PathBuf> {
     if !path.is_absolute() {
         return Err(PlatformError::invalid(format!(
             "{kind} file URI resolves to a non-absolute path"
+        )));
+    }
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == Component::ParentDir) {
+        return Err(PlatformError::invalid(format!(
+            "Invalid input: {}",
+            path.display()
         )));
     }
     Ok(path)

@@ -1412,6 +1412,10 @@ impl HttpService for StreamService {
 }
 
 async fn migrate_stream_subscription_store(path: &Path) -> Result<()> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+    }
     let payload = match fs::read(path).await {
         Ok(payload) => payload,
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
