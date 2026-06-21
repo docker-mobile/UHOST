@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::io::{Error, ErrorKind, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
-use std::path::{Path, PathBuf};
+use std::path::{Component, Path, PathBuf};
 use std::sync::OnceLock;
 use std::time::Duration;
 
@@ -424,9 +424,14 @@ fn cmd_migrate(args: &[String]) -> Result<()> {
                 .unwrap_or_else(|| String::from("http://127.0.0.1:9080"));
             let change_request_id = required_option(args, "--change-request-id")?;
             if let Some(bundle_root) = option_value(args, "--bundle") {
+                // Prevent path traversal attacks by rejecting paths containing '..'.
+                let bundle_path = Path::new(&bundle_root);
+                if bundle_path.components().any(|c| c == Component::ParentDir) {
+                    return Err(PlatformError::invalid(format!("Invalid input: {}", bundle_path.display())));
+                }
                 return apply_migration_bundle(
                     &endpoint,
-                    Path::new(&bundle_root),
+                    bundle_path,
                     &change_request_id,
                 );
             }
@@ -697,7 +702,12 @@ fn cmd_identity(args: &[String]) -> Result<()> {
             let endpoint = option_value(args, "--endpoint")
                 .unwrap_or_else(|| String::from("http://127.0.0.1:9080"));
             let file = required_option(args, "--file")?;
-            let raw = fs::read_to_string(&file).map_err(|error| {
+            // Prevent path traversal attacks by rejecting paths containing '..'.
+            let file_path = Path::new(&file);
+            if file_path.components().any(|c| c == Component::ParentDir) {
+                return Err(PlatformError::invalid(format!("Invalid input: {}", file_path.display())));
+            }
+            let raw = fs::read_to_string(file_path).map_err(|error| {
                 PlatformError::invalid("failed to read --file").with_detail(error.to_string())
             })?;
             let users: serde_json::Value = serde_json::from_str(&raw).map_err(|error| {
@@ -3160,11 +3170,16 @@ fn cmd_release(args: &[String]) -> Result<()> {
     match args.first().map(String::as_str) {
         Some("verify") => {
             let artifact = required_option(args, "--artifact")?;
+            // Prevent path traversal attacks by rejecting paths containing '..'.
+            let artifact_path = Path::new(&artifact);
+            if artifact_path.components().any(|c| c == Component::ParentDir) {
+                return Err(PlatformError::invalid(format!("Invalid input: {}", artifact_path.display())));
+            }
             let expected = required_option(args, "--sha256")?;
             validate_sha256_hex("release verify --sha256", &expected)?;
             let manifest = option_value(args, "--manifest");
             let provenance = option_value(args, "--provenance");
-            let bytes = fs::read(&artifact).map_err(|error| {
+            let bytes = fs::read(artifact_path).map_err(|error| {
                 PlatformError::unavailable("failed to read artifact").with_detail(error.to_string())
             })?;
             let actual = sha256_hex(&bytes);
@@ -3178,7 +3193,7 @@ fn cmd_release(args: &[String]) -> Result<()> {
             if let Some(manifest_path) = manifest.as_deref() {
                 let manifest_result = verify_artifact_manifest(
                     Path::new(manifest_path),
-                    Path::new(&artifact),
+                    artifact_path,
                     &actual,
                 )?;
                 payload["manifest_verified"] = serde_json::Value::Bool(true);
@@ -3190,9 +3205,14 @@ fn cmd_release(args: &[String]) -> Result<()> {
                 });
             }
             if let Some(provenance_path) = provenance.as_deref() {
+                // Prevent path traversal attacks by rejecting paths containing '..'.
+                let provenance_path_ref = Path::new(provenance_path);
+                if provenance_path_ref.components().any(|c| c == Component::ParentDir) {
+                    return Err(PlatformError::invalid(format!("Invalid input: {}", provenance_path_ref.display())));
+                }
                 let provenance_result = verify_provenance_attestation(
-                    Path::new(provenance_path),
-                    Some(Path::new(&artifact)),
+                    provenance_path_ref,
+                    Some(artifact_path),
                     Some(actual.as_str()),
                     manifest.as_deref().map(Path::new),
                 )?;
@@ -3263,6 +3283,10 @@ fn verify_artifact_manifest(
     artifact_path: &Path,
     actual_sha256: &str,
 ) -> Result<ManifestEntry> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if manifest_path.components().any(|c| c == Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", manifest_path.display())));
+    }
     // Manifest verification matches entries by artifact basename or by path
     // equivalence, so release bundles can move files around without forcing a
     // manifest rewrite as long as the intended artifact identity is unchanged.
@@ -3329,6 +3353,10 @@ fn verify_provenance_attestation(
     actual_sha256: Option<&str>,
     manifest_path: Option<&Path>,
 ) -> Result<ProvenanceSummary> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+    }
     let content =
         fs::read_to_string(path).map_err(|error| {
             PlatformError::unavailable("failed to read provenance attestation")
@@ -3441,6 +3469,10 @@ fn verify_provenance_attestation(
     )?;
 
     if let Some(manifest_path) = manifest_path {
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        if manifest_path.components().any(|c| c == Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", manifest_path.display())));
+        }
         let manifest_bytes = fs::read(manifest_path).map_err(|error| {
             PlatformError::unavailable(
                 "failed to read artifact manifest for provenance verification",

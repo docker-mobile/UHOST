@@ -49,7 +49,12 @@ impl ConfigLoader {
     where
         T: LoadableConfig,
     {
-        let raw = fs::read_to_string(path.as_ref()).await.map_err(|error| {
+        // Prevent path traversal attacks by rejecting paths containing '..'.
+        let path = path.as_ref();
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
+        let raw = fs::read_to_string(path).await.map_err(|error| {
             PlatformError::unavailable("failed to read config file").with_detail(error.to_string())
         })?;
 
