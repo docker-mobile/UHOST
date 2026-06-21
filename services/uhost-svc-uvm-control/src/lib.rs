@@ -2624,7 +2624,11 @@ impl UvmControlService {
         let Some(platform_root) = self.state_root.parent() else {
             return Ok(None);
         };
+        // Prevent path traversal attacks by rejecting paths containing '..'.
         let path = platform_root.join(service_dir).join(file_name);
+        if path.components().any(|c| c == std::path::Component::ParentDir) {
+            return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+        }
         if fs::metadata(&path).await.is_err() {
             return Ok(None);
         }

@@ -694,6 +694,10 @@ async fn path_exists(path: &Path) -> Result<bool> {
 }
 
 async fn target_matches_checksum(path: &Path, expected_sha256: &str) -> Result<bool> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+    }
     let payload = match fs::read(path).await {
         Ok(payload) => payload,
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(false),

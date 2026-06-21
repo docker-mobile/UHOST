@@ -2550,6 +2550,10 @@ fn workspace_root_candidates(platform_state_root: &Path) -> Vec<PathBuf> {
 }
 
 fn collect_named_files(root: &Path, file_name: &str, output: &mut Vec<PathBuf>) -> Result<()> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if root.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", root.display())));
+    }
     let entries = std::fs::read_dir(root).map_err(|error| {
         PlatformError::unavailable("failed to read config directory").with_detail(format!(
             "{}: {}",
@@ -2634,6 +2638,10 @@ async fn config_targets_state_root(
 }
 
 async fn read_json_collection_schema_version(path: &Path) -> Result<u32> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+    }
     if fs::metadata(path).await.is_err() {
         return Ok(1);
     }
@@ -2663,6 +2671,10 @@ async fn read_json_collection_schema_version(path: &Path) -> Result<u32> {
 }
 
 async fn set_json_collection_schema_version(path: &Path, schema_version: u16) -> Result<()> {
+    // Prevent path traversal attacks by rejecting paths containing '..'.
+    if path.components().any(|c| c == std::path::Component::ParentDir) {
+        return Err(PlatformError::invalid(format!("Invalid input: {}", path.display())));
+    }
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).await.map_err(|error| {
             PlatformError::unavailable("failed to create collection directory")
