@@ -1,0 +1,20 @@
+[package]
+name = "uhost-uhvm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish = false
+
+[target.'cfg(all(target_os = "linux", target_arch = "x86_64"))'.dependencies]
+kvm-bindings.workspace = true
+kvm-ioctls.workspace = true
+libc.workspace = true
+seccompiler.workspace = true
+vmm-sys-util.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true
