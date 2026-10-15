@@ -1,5 +1,5 @@
 use kvm_bindings::{CpuId, kvm_cpuid_entry2};
-use kvm_ioctls::{Kvm, VcpuFd};
+use kvm_ioctls::{Cap, Kvm, VcpuFd};
 
 use crate::{Result, UhvmError};
 
@@ -8,6 +8,7 @@ pub fn configure_cpuid(kvm: &Kvm, vcpu: &VcpuFd, cpu_id: u8, vcpus: u8) -> Resul
     let mut cpuid = kvm
         .get_supported_cpuid(256)
         .map_err(|error| UhvmError::new(format!("read supported CPUID: {error}")))?;
+    let tsc_deadline_supported = kvm.check_extension(Cap::TscDeadlineTimer);
     let topology_shift = u32::from(vcpus.saturating_sub(1))
         .next_power_of_two()
         .trailing_zeros();
@@ -17,7 +18,9 @@ pub fn configure_cpuid(kvm: &Kvm, vcpu: &VcpuFd, cpu_id: u8, vcpus: u8) -> Resul
                 entry.ebx = (entry.ebx & 0x0000_ffff)
                     | (u32::from(vcpus) << 16)
                     | (u32::from(cpu_id) << 24);
-                entry.ecx |= 1 << 31;
+                entry.ecx = (entry.ecx & !(1 << 24))
+                    | (u32::from(tsc_deadline_supported) << 24)
+                    | (1 << 31);
             }
             4 => {
                 let cache_level = (entry.eax >> 5) & 0x07;

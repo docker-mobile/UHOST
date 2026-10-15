@@ -1,15 +1,13 @@
 use std::{
     fs::{File, OpenOptions},
-    io::{Read, Seek, SeekFrom, Write},
     path::Path,
-    sync::Mutex,
 };
 
 use vmm_sys_util::eventfd::EventFd;
 
 use crate::{Result, UhvmError, sys::memory::GuestMemory};
 
-const QUEUE_MAX: u16 = 128;
+const QUEUE_MAX: u16 = 256;
 const DESC_NEXT: u16 = 1;
 const DESC_WRITE: u16 = 2;
 const DESC_INDIRECT: u16 = 4;
@@ -21,6 +19,7 @@ const VIRTIO_BLK_S_OK: u8 = 0;
 const VIRTIO_BLK_S_IOERR: u8 = 1;
 const VIRTIO_BLK_S_UNSUPP: u8 = 2;
 const VIRTIO_F_VERSION_1: u64 = 1 << 32;
+const VIRTIO_BLK_F_SEG_MAX: u64 = 1 << 2;
 const VIRTIO_BLK_F_RO: u64 = 1 << 5;
 const VIRTIO_BLK_F_FLUSH: u64 = 1 << 9;
 
@@ -44,10 +43,11 @@ struct Queue {
 
 /// Modern virtio-mmio block device backed by a raw image.
 pub struct VirtioBlock {
-    file: Mutex<File>,
+    file: File,
     read_only: bool,
     capacity_sectors: u64,
     irq: EventFd,
+    notification: EventFd,
     queue: Queue,
     status: u32,
     device_feature_select: u32,
@@ -60,7 +60,7 @@ pub struct VirtioBlock {
 
 impl VirtioBlock {
     /// Opens a raw image and initializes the transport.
-    pub fn open(path: &Path, read_only: bool, irq: EventFd) -> Result<Self> {
+    pub fn open(path: &Path, read_only: bool, irq: EventFd, notification: EventFd) -> Result<Self> {
         let mut options = OpenOptions::new();
         options.read(true).write(!read_only);
         let file = options
@@ -72,10 +72,11 @@ impl VirtioBlock {
             .len()
             / 512;
         Ok(Self {
-            file: Mutex::new(file),
+            file,
             read_only,
             capacity_sectors,
             irq,
+            notification,
             queue: Queue::default(),
             status: 0,
             device_feature_select: 0,
@@ -113,6 +114,7 @@ impl VirtioBlock {
             0x0fc => self.config_generation,
             0x100 => self.capacity_sectors as u32,
             0x104 => (self.capacity_sectors >> 32) as u32,
+            0x10c => u32::from(QUEUE_MAX - 2),
             _ => 0,
         }
     }
@@ -152,7 +154,7 @@ impl VirtioBlock {
             }
             0x050 if self.queue_select == 0 => {
                 if value == 0 && self.queue.ready && self.status & 0x40 == 0 {
-                    self.process_queue(memory);
+                    self.notify_queue();
                 }
             }
             0x064 => {
@@ -189,6 +191,7 @@ impl VirtioBlock {
 
     fn host_features(&self) -> u32 {
         let features = VIRTIO_F_VERSION_1
+            | VIRTIO_BLK_F_SEG_MAX
             | VIRTIO_BLK_F_FLUSH
             | if self.read_only { VIRTIO_BLK_F_RO } else { 0 };
         if self.device_feature_select == 0 {
@@ -222,7 +225,11 @@ impl VirtioBlock {
             && memory.contains_range(self.queue.used_address, used_bytes as usize)
     }
 
-    fn process_queue(&mut self, memory: &GuestMemory) {
+    pub(crate) fn notify_queue(&self) {
+        let _ = self.notification.write(1);
+    }
+
+    pub(crate) fn process_queue(&mut self, memory: &GuestMemory) {
         let available_index = match memory.read_obj::<u16>(self.queue.available_address + 2) {
             Ok(index) => index,
             Err(_) => {
@@ -303,10 +310,18 @@ impl VirtioBlock {
         let mut status = VIRTIO_BLK_S_OK;
         match request_type {
             VIRTIO_BLK_T_IN => {
+                if data_descriptors
+                    .iter()
+                    .any(|descriptor| descriptor.flags & DESC_WRITE == 0)
+                {
+                    return Err(UhvmError::new("virtio-blk IN descriptor is not writable"));
+                }
                 let requested = data_descriptors.iter().try_fold(0_u64, |sum, desc| {
                     sum.checked_add(u64::from(desc.length))
                         .ok_or_else(|| UhvmError::new("virtio-blk request length overflows"))
                 })?;
+                usize::try_from(requested)
+                    .map_err(|_| UhvmError::new("virtio-blk request is too large"))?;
                 let offset = sector
                     .checked_mul(512)
                     .ok_or_else(|| UhvmError::new("virtio-blk sector offset overflows"))?;
@@ -316,27 +331,18 @@ impl VirtioBlock {
                 if end > self.capacity_sectors * 512 {
                     status = VIRTIO_BLK_S_IOERR;
                 } else {
-                    let mut bytes = vec![
-                        0;
-                        usize::try_from(requested).map_err(|_| UhvmError::new(
-                            "virtio-blk request is too large"
-                        ))?
-                    ];
-                    let mut file = self
-                        .file
-                        .lock()
-                        .map_err(|_| UhvmError::new("virtio-blk file lock is poisoned"))?;
-                    file.seek(SeekFrom::Start(offset))
-                        .and_then(|_| file.read_exact(&mut bytes))
-                        .map_err(|error| UhvmError::new(format!("read virtio block: {error}")))?;
-                    let mut cursor = 0_usize;
+                    let mut file_offset = offset;
                     for descriptor in data_descriptors {
                         let length = descriptor.length as usize;
-                        if descriptor.flags & DESC_WRITE == 0 {
-                            return Err(UhvmError::new("virtio-blk IN descriptor is not writable"));
-                        }
-                        memory.write_at(descriptor.address, &bytes[cursor..cursor + length])?;
-                        cursor += length;
+                        memory.read_file_into(
+                            &self.file,
+                            file_offset,
+                            descriptor.address,
+                            length,
+                        )?;
+                        file_offset = file_offset
+                            .checked_add(u64::from(descriptor.length))
+                            .ok_or_else(|| UhvmError::new("virtio-blk file offset overflows"))?;
                     }
                     data_length = requested.min(u64::from(u32::MAX)) as u32;
                 }
@@ -362,37 +368,27 @@ impl VirtioBlock {
                     {
                         status = VIRTIO_BLK_S_IOERR;
                     } else {
-                        let mut bytes = vec![
-                            0;
-                            usize::try_from(requested).map_err(|_| {
-                                UhvmError::new("virtio-blk request is too large")
-                            })?
-                        ];
-                        let mut cursor = 0_usize;
+                        usize::try_from(requested)
+                            .map_err(|_| UhvmError::new("virtio-blk request is too large"))?;
+                        let mut file_offset = offset;
                         for descriptor in data_descriptors {
-                            let length = descriptor.length as usize;
-                            memory
-                                .read_at(descriptor.address, &mut bytes[cursor..cursor + length])?;
-                            cursor += length;
+                            memory.write_file_from(
+                                &self.file,
+                                file_offset,
+                                descriptor.address,
+                                descriptor.length as usize,
+                            )?;
+                            file_offset = file_offset
+                                .checked_add(u64::from(descriptor.length))
+                                .ok_or_else(|| {
+                                    UhvmError::new("virtio-blk file offset overflows")
+                                })?;
                         }
-                        let mut file = self
-                            .file
-                            .lock()
-                            .map_err(|_| UhvmError::new("virtio-blk file lock is poisoned"))?;
-                        file.seek(SeekFrom::Start(offset))
-                            .and_then(|_| file.write_all(&bytes))
-                            .map_err(|error| {
-                                UhvmError::new(format!("write virtio block: {error}"))
-                            })?;
                     }
                 }
             }
             VIRTIO_BLK_T_FLUSH => {
-                if let Ok(file) = self.file.lock() {
-                    if file.sync_all().is_err() {
-                        status = VIRTIO_BLK_S_IOERR;
-                    }
-                } else {
+                if self.file.sync_all().is_err() {
                     status = VIRTIO_BLK_S_IOERR;
                 }
             }
@@ -577,7 +573,7 @@ mod tests {
                 .map_or(0, |duration| duration.as_nanos())
         ));
         std::fs::write(&path, b"")?;
-        let mut device = super::VirtioBlock::open(&path, true, EventFd::new(0)?)?;
+        let mut device = super::VirtioBlock::open(&path, true, EventFd::new(0)?, EventFd::new(0)?)?;
         device.queue = Queue {
             size: 8,
             ready: true,
@@ -589,6 +585,17 @@ mod tests {
         assert_ne!(device.status & 0x40, 0);
         drop(device);
         std::fs::remove_file(path)?;
+        Ok(())
+    }
+
+    #[test]
+    fn advertises_segment_max_and_queue_capacity() -> Result<(), Box<dyn Error>> {
+        let file = tempfile::NamedTempFile::new()?;
+        let device =
+            super::VirtioBlock::open(file.path(), true, EventFd::new(0)?, EventFd::new(0)?)?;
+        assert_eq!(device.read_register(0x034), 256);
+        assert_eq!(device.read_register(0x010) & (1 << 2), 1 << 2);
+        assert_eq!(device.read_register(0x10c), 254);
         Ok(())
     }
 }

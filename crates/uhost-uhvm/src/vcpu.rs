@@ -1,11 +1,11 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use kvm_bindings::{KVM_SYSTEM_EVENT_RESET, KVM_SYSTEM_EVENT_SHUTDOWN};
 use kvm_ioctls::{VcpuExit, VcpuFd};
 
-use crate::{Result, SeccompLevel, UhvmError, VmmExit, seccomp, vm::Bus};
+use crate::{Result, SeccompLevel, VmmExit, seccomp, vm::Bus};
 
-pub(super) fn run(mut vcpu: VcpuFd, bus: Arc<Mutex<Bus>>, seccomp_level: SeccompLevel) -> VmmExit {
+pub(super) fn run(mut vcpu: VcpuFd, bus: Arc<Bus>, seccomp_level: SeccompLevel) -> VmmExit {
     if let Err(error) = seccomp::apply_vcpu_filter(seccomp_level) {
         return VmmExit::Error(error.to_string());
     }
@@ -54,11 +54,8 @@ pub(super) fn run(mut vcpu: VcpuFd, bus: Arc<Mutex<Bus>>, seccomp_level: Seccomp
 }
 
 fn dispatch(
-    bus: &Arc<Mutex<Bus>>,
-    operation: impl FnOnce(&mut Bus) -> Result<Option<VmmExit>>,
+    bus: &Bus,
+    operation: impl FnOnce(&Bus) -> Result<Option<VmmExit>>,
 ) -> Result<Option<VmmExit>> {
-    let mut bus = bus
-        .lock()
-        .map_err(|_| UhvmError::new("device bus lock is poisoned"))?;
-    operation(&mut bus)
+    operation(bus)
 }

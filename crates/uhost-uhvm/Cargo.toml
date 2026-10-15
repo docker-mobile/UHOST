@@ -13,5 +13,8 @@ libc.workspace = true
 seccompiler.workspace = true
 vmm-sys-util.workspace = true
 
+[dev-dependencies]
+tempfile.workspace = true
+
 [lints]
 workspace = true

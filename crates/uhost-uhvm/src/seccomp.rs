@@ -35,10 +35,6 @@ const VCPU_SYSCALLS: &[i64] = &[
     libc::SYS_brk,
     libc::SYS_fstat,
     libc::SYS_lseek,
-    libc::SYS_pread64,
-    libc::SYS_pwrite64,
-    libc::SYS_fsync,
-    libc::SYS_fdatasync,
     libc::SYS_arch_prctl,
     libc::SYS_set_robust_list,
     libc::SYS_rseq,
@@ -75,6 +71,41 @@ const VMM_SYSCALLS: &[i64] = &[
     libc::SYS_rseq,
 ];
 
+const DEVICE_SYSCALLS: &[i64] = &[
+    libc::SYS_read,
+    libc::SYS_write,
+    libc::SYS_writev,
+    libc::SYS_futex,
+    libc::SYS_rt_sigaction,
+    libc::SYS_rt_sigprocmask,
+    libc::SYS_rt_sigreturn,
+    libc::SYS_sigaltstack,
+    libc::SYS_clock_gettime,
+    libc::SYS_sched_yield,
+    libc::SYS_restart_syscall,
+    libc::SYS_exit,
+    libc::SYS_exit_group,
+    libc::SYS_close,
+    libc::SYS_fcntl,
+    libc::SYS_gettid,
+    libc::SYS_getpid,
+    libc::SYS_mmap,
+    libc::SYS_mprotect,
+    libc::SYS_munmap,
+    libc::SYS_madvise,
+    libc::SYS_brk,
+    libc::SYS_fstat,
+    libc::SYS_lseek,
+    libc::SYS_nanosleep,
+    libc::SYS_pread64,
+    libc::SYS_pwrite64,
+    libc::SYS_fsync,
+    libc::SYS_fdatasync,
+    libc::SYS_arch_prctl,
+    libc::SYS_set_robust_list,
+    libc::SYS_rseq,
+];
+
 /// Installs the vCPU syscall filter on the current thread.
 pub fn apply_vcpu_filter(level: SeccompLevel) -> Result<()> {
     apply_filter(level, VCPU_SYSCALLS, true)
@@ -83,6 +114,11 @@ pub fn apply_vcpu_filter(level: SeccompLevel) -> Result<()> {
 /// Installs the VMM/device syscall filter on the current thread.
 pub fn apply_vmm_filter(level: SeccompLevel) -> Result<()> {
     apply_filter(level, VMM_SYSCALLS, false)
+}
+
+/// Installs the VMM/device syscall filter with block I/O on the current thread.
+pub fn apply_device_filter(level: SeccompLevel) -> Result<()> {
+    apply_filter(level, DEVICE_SYSCALLS, false)
 }
 
 fn apply_filter(level: SeccompLevel, syscalls: &[i64], vcpu: bool) -> Result<()> {

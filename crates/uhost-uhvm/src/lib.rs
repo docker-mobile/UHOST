@@ -30,6 +30,9 @@ impl fmt::Display for UhvmError {
 
 impl Error for UhvmError {}
 
+/// Explicit process-hardening operations for the uHVM command-line application.
+pub mod process;
+
 /// Guest drive configuration.
 #[derive(Debug, Clone)]
 pub struct DriveConfig {

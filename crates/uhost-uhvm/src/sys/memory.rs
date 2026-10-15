@@ -1,6 +1,6 @@
 //! Guarded guest RAM mappings and bounds-checked guest-memory access.
 
-use std::{io, ptr::NonNull};
+use std::{fs::File, io, os::fd::AsRawFd, ptr::NonNull};
 
 use crate::{Result, UhvmError};
 
@@ -107,17 +107,15 @@ impl GuestMemory {
     pub fn read_at(&self, address: u64, destination: &mut [u8]) -> Result<()> {
         let region = self.region_for(address, destination.len())?;
         let offset = region.offset(address);
-        for (index, byte) in destination.iter_mut().enumerate() {
-            // SAFETY: region_for checked the complete range and the mapping remains
-            // valid; volatile reads observe bytes that KVM may update asynchronously.
-            *byte = unsafe {
-                std::ptr::read_volatile(
-                    region
-                        .mapping
-                        .as_ptr()
-                        .add(region.page_size + offset + index),
-                )
-            };
+        // SAFETY: region_for validated the complete mapping range, and destination
+        // is a caller-owned slice that cannot alias the private guest mapping through
+        // safe APIs. KVM may race these ordinary byte copies through shared memory.
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                region.mapping.as_ptr().add(region.page_size + offset),
+                destination.as_mut_ptr(),
+                destination.len(),
+            );
         }
         Ok(())
     }
@@ -126,18 +124,133 @@ impl GuestMemory {
     pub fn write_at(&self, address: u64, source: &[u8]) -> Result<()> {
         let region = self.region_for(address, source.len())?;
         let offset = region.offset(address);
-        for (index, byte) in source.iter().enumerate() {
-            // SAFETY: region_for checked the complete range and the mapping remains
-            // valid; volatile writes reach bytes that KVM may read asynchronously.
-            unsafe {
-                std::ptr::write_volatile(
-                    region
-                        .mapping
-                        .as_ptr()
-                        .add(region.page_size + offset + index),
-                    *byte,
-                );
+        // SAFETY: region_for validated the complete mapping range, and source is a
+        // caller-owned slice that cannot alias the private guest mapping through safe
+        // APIs. KVM may race these ordinary byte copies through shared memory.
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                source.as_ptr(),
+                region.mapping.as_ptr().add(region.page_size + offset),
+                source.len(),
+            );
+        }
+        Ok(())
+    }
+
+    /// Reads exactly `len` bytes from a file into guest RAM at `gpa`.
+    pub fn read_file_into(
+        &self,
+        file: &File,
+        file_offset: u64,
+        gpa: u64,
+        len: usize,
+    ) -> Result<()> {
+        let region = self.region_for(gpa, len)?;
+        validate_file_range(file_offset, len)?;
+        if len == 0 {
+            return Ok(());
+        }
+
+        // SAFETY: region_for validated this address and length inside the mapped region.
+        let destination = unsafe {
+            region
+                .mapping
+                .as_ptr()
+                .add(region.page_size + region.offset(gpa))
+        };
+        let mut completed = 0;
+        while completed < len {
+            let count = (len - completed).min(isize::MAX as usize);
+            let offset = file_offset
+                .checked_add(completed as u64)
+                .ok_or_else(|| UhvmError::new("file read offset overflows"))?;
+            let offset = libc::off64_t::try_from(offset)
+                .map_err(|_| UhvmError::new("file read offset exceeds platform limits"))?;
+            // SAFETY: region_for validated the full destination range, which remains
+            // mapped for this call; the file descriptor is valid for pread64. KVM may
+            // access the shared guest bytes concurrently, as with other plain copies.
+            let result = unsafe {
+                libc::pread64(
+                    file.as_raw_fd(),
+                    destination.add(completed).cast(),
+                    count,
+                    offset,
+                )
+            };
+            if result < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() == io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return Err(UhvmError::new(format!(
+                    "read file into guest memory: {error}"
+                )));
             }
+            if result == 0 {
+                return Err(UhvmError::new(
+                    "short read while copying file into guest memory",
+                ));
+            }
+            completed += result as usize;
+        }
+        Ok(())
+    }
+
+    /// Writes exactly `len` bytes from guest RAM at `gpa` into a file.
+    pub fn write_file_from(
+        &self,
+        file: &File,
+        file_offset: u64,
+        gpa: u64,
+        len: usize,
+    ) -> Result<()> {
+        let region = self.region_for(gpa, len)?;
+        validate_file_range(file_offset, len)?;
+        if len == 0 {
+            return Ok(());
+        }
+
+        // SAFETY: region_for validated this address and length inside the mapped region.
+        let source = unsafe {
+            region
+                .mapping
+                .as_ptr()
+                .add(region.page_size + region.offset(gpa))
+        };
+        let mut completed = 0;
+        while completed < len {
+            let count = (len - completed).min(isize::MAX as usize);
+            let offset = file_offset
+                .checked_add(completed as u64)
+                .ok_or_else(|| UhvmError::new("file write offset overflows"))?;
+            let offset = libc::off64_t::try_from(offset)
+                .map_err(|_| UhvmError::new("file write offset exceeds platform limits"))?;
+            // SAFETY: region_for validated the full source range, which remains mapped
+            // for this call; the file descriptor is valid for pwrite64. KVM may access
+            // the shared guest bytes concurrently, as with other plain copies.
+            let result = unsafe {
+                libc::pwrite64(
+                    file.as_raw_fd(),
+                    source.add(completed).cast(),
+                    count,
+                    offset,
+                )
+            };
+            if result < 0 {
+                let error = io::Error::last_os_error();
+                if error.kind() == io::ErrorKind::Interrupted {
+                    continue;
+                }
+                return Err(UhvmError::new(format!(
+                    "write guest memory to file: {error}"
+                )));
+            }
+            if result == 0 {
+                return Err(UhvmError::new(
+                    "short write while copying guest memory to file",
+                ));
+            }
+            completed += result as usize;
         }
         Ok(())
     }
@@ -166,6 +279,22 @@ impl GuestMemory {
                 ))
             })
     }
+}
+
+fn validate_file_range(file_offset: u64, len: usize) -> Result<()> {
+    if len == 0 {
+        return Ok(());
+    }
+    let last_offset = file_offset
+        .checked_add(
+            u64::try_from(len - 1)
+                .map_err(|_| UhvmError::new("file transfer length exceeds platform limits"))?,
+        )
+        .ok_or_else(|| UhvmError::new("file transfer range overflows"))?;
+    libc::off64_t::try_from(file_offset)
+        .and_then(|_| libc::off64_t::try_from(last_offset))
+        .map(|_| ())
+        .map_err(|_| UhvmError::new("file transfer range exceeds platform limits"))
 }
 
 /// Integer types supported by guest-memory object operations.
@@ -270,7 +399,10 @@ fn map_region(guest_address: u64, length: u64) -> Result<RamRegion> {
 
 #[cfg(test)]
 mod tests {
-    use std::error::Error;
+    use std::{
+        error::Error,
+        io::{Read, Seek, SeekFrom, Write},
+    };
 
     use super::GuestMemory;
 
@@ -293,6 +425,38 @@ mod tests {
         assert_eq!(regions[0].len(), 3 * 1024 * 1024 * 1024);
         assert_eq!(regions[1].guest_address(), 4 * 1024 * 1024 * 1024);
         assert!(!memory.contains_range(3 * 1024 * 1024 * 1024, 1));
+        Ok(())
+    }
+
+    #[test]
+    fn guest_memory_file_transfers_round_trip() -> Result<(), Box<dyn Error>> {
+        let memory = GuestMemory::new(1)?;
+        let mut file = tempfile::tempfile()?;
+        let source = b"guest-memory positioned I/O";
+        file.write_all(source)?;
+
+        memory.read_file_into(&file, 0, 0x1000, source.len())?;
+        memory.write_file_from(&file, 0x100, 0x1000, source.len())?;
+
+        file.seek(SeekFrom::Start(0x100))?;
+        let mut copied = vec![0; source.len()];
+        file.read_exact(&mut copied)?;
+        assert_eq!(copied, source);
+        Ok(())
+    }
+
+    #[test]
+    fn guest_memory_file_transfers_reject_out_of_range_and_short_reads()
+    -> Result<(), Box<dyn Error>> {
+        let memory = GuestMemory::new(1)?;
+        let file = tempfile::tempfile()?;
+        assert!(memory.read_file_into(&file, 0, 1024 * 1024 - 1, 2).is_err());
+        assert!(
+            memory
+                .write_file_from(&file, 0, 1024 * 1024 - 1, 2)
+                .is_err()
+        );
+        assert!(memory.read_file_into(&file, 0, 0x1000, 1).is_err());
         Ok(())
     }
 }

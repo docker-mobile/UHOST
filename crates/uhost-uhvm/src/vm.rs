@@ -1,14 +1,18 @@
 use std::{
     fs::OpenOptions,
     io,
-    sync::{Arc, Mutex, mpsc},
-    thread,
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+        mpsc,
+    },
+    thread::{self, JoinHandle},
 };
 
 use kvm_bindings::{
     KVM_MP_STATE_UNINITIALIZED, KVM_PIT_SPEAKER_DUMMY, kvm_mp_state, kvm_pit_config,
 };
-use kvm_ioctls::Kvm;
+use kvm_ioctls::{IoEventAddress, Kvm};
 use vmm_sys_util::eventfd::EventFd;
 
 use crate::{
@@ -26,37 +30,47 @@ const VIRTIO_IRQ_BASE: u32 = 5;
 
 pub(super) struct Bus {
     memory: Arc<GuestMemory>,
-    serial: SerialPort,
-    drives: Vec<VirtioBlock>,
+    serial: Mutex<SerialPort>,
+    drives: Vec<Arc<Mutex<VirtioBlock>>>,
 }
 
 impl Bus {
-    pub(super) fn io_read(&mut self, port: u16, data: &mut [u8]) -> Result<Option<VmmExit>> {
+    pub(super) fn io_read(&self, port: u16, data: &mut [u8]) -> Result<Option<VmmExit>> {
         data.fill(0);
         if (0x3f8..=0x3ff).contains(&port) && !data.is_empty() {
-            data[0] = self.serial.read(port);
+            data[0] = self
+                .serial
+                .lock()
+                .map_err(|_| UhvmError::new("serial device lock is poisoned"))?
+                .read(port);
         }
         Ok(None)
     }
 
-    pub(super) fn io_write(&mut self, port: u16, data: &[u8]) -> Result<Option<VmmExit>> {
+    pub(super) fn io_write(&self, port: u16, data: &[u8]) -> Result<Option<VmmExit>> {
         if data.is_empty() {
             return Ok(None);
         }
         if (0x3f8..=0x3ff).contains(&port) {
-            self.serial.write(port, data[0])?;
+            self.serial
+                .lock()
+                .map_err(|_| UhvmError::new("serial device lock is poisoned"))?
+                .write(port, data[0])?;
         } else if port == 0x64 && data[0] == 0xfe {
             return Ok(Some(VmmExit::GuestReset));
         }
         Ok(None)
     }
 
-    pub(super) fn mmio_read(&mut self, address: u64, data: &mut [u8]) -> Result<Option<VmmExit>> {
+    pub(super) fn mmio_read(&self, address: u64, data: &mut [u8]) -> Result<Option<VmmExit>> {
         data.fill(0);
         if let Some((device, offset)) = self.drive_at(address)
             && !data.is_empty()
         {
-            let value = self.drives[device].read_register(offset);
+            let value = self.drives[device]
+                .lock()
+                .map_err(|_| UhvmError::new("virtio block device lock is poisoned"))?
+                .read_register(offset);
             let bytes = value.to_le_bytes();
             let length = data.len().min(bytes.len());
             data[..length].copy_from_slice(&bytes[..length]);
@@ -64,13 +78,16 @@ impl Bus {
         Ok(None)
     }
 
-    pub(super) fn mmio_write(&mut self, address: u64, data: &[u8]) -> Result<Option<VmmExit>> {
+    pub(super) fn mmio_write(&self, address: u64, data: &[u8]) -> Result<Option<VmmExit>> {
         if let Some((device, offset)) = self.drive_at(address) {
             let mut bytes = [0_u8; 4];
             let length = data.len().min(bytes.len());
             bytes[..length].copy_from_slice(&data[..length]);
             let value = u32::from_le_bytes(bytes);
-            self.drives[device].write_register(offset, value, &self.memory)?;
+            self.drives[device]
+                .lock()
+                .map_err(|_| UhvmError::new("virtio block device lock is poisoned"))?
+                .write_register(offset, value, &self.memory)?;
         }
         Ok(None)
     }
@@ -108,8 +125,6 @@ pub(super) fn boot(config: UhvmConfig) -> Result<VmmExit> {
     }
     let mut drive_configs = config.drives.clone();
     drive_configs.sort_by_key(|drive| !drive.is_root);
-    sys::close_inherited_fds()?;
-    sys::harden_process()?;
     let kvm = Kvm::new().map_err(|error| UhvmError::new(format!("open /dev/kvm: {error}")))?;
     let vm = kvm
         .create_vm()
@@ -142,23 +157,59 @@ pub(super) fn boot(config: UhvmConfig) -> Result<VmmExit> {
     vm.register_irqfd(&serial_irq, SERIAL_IRQ)
         .map_err(|error| UhvmError::new(format!("register serial irqfd: {error}")))?;
     let serial_output = serial_output(&config.serial)?;
-    let (serial, serial_input) = SerialPort::new(serial_output, serial_irq)?;
+    let (serial_output_sender, serial_output_thread) =
+        crate::devices::serial::spawn_output_writer(serial_output, config.seccomp)
+            .map_err(|error| UhvmError::new(format!("spawn serial output thread: {error}")))?;
+    let (serial, serial_input) = SerialPort::new(serial_output_sender, serial_irq)?;
     let input_thread = crate::devices::serial::spawn_stdin_reader(serial_input, config.seccomp)
         .map_err(|error| UhvmError::new(format!("spawn serial input thread: {error}")))?;
 
     let mut drives = Vec::with_capacity(config.drives.len());
+    let mut drive_workers = Vec::with_capacity(config.drives.len());
     for (index, drive) in drive_configs.iter().enumerate() {
         let irq = EventFd::new(0)
             .map_err(|error| UhvmError::new(format!("create virtio irq eventfd: {error}")))?;
         vm.register_irqfd(&irq, VIRTIO_IRQ_BASE + index as u32)
             .map_err(|error| UhvmError::new(format!("register virtio irqfd: {error}")))?;
-        drives.push(VirtioBlock::open(&drive.path, drive.read_only, irq)?);
+        let notification = EventFd::new(0).map_err(|error| {
+            UhvmError::new(format!("create virtio notification eventfd: {error}"))
+        })?;
+        let address = MMIO_BASE + index as u64 * MMIO_STRIDE + 0x50;
+        vm.register_ioevent(&notification, &IoEventAddress::Mmio(address), 0_u32)
+            .map_err(|error| UhvmError::new(format!("register virtio ioeventfd: {error}")))?;
+        let device_notification = notification.try_clone().map_err(|error| {
+            UhvmError::new(format!("clone virtio notification eventfd: {error}"))
+        })?;
+        let worker_notification = notification.try_clone().map_err(|error| {
+            UhvmError::new(format!("clone virtio notification eventfd: {error}"))
+        })?;
+        let device = Arc::new(Mutex::new(VirtioBlock::open(
+            &drive.path,
+            drive.read_only,
+            irq,
+            device_notification,
+        )?));
+        let stop = Arc::new(AtomicBool::new(false));
+        let worker = spawn_drive_worker(
+            index,
+            worker_notification,
+            Arc::clone(&device),
+            Arc::clone(&memory),
+            Arc::clone(&stop),
+            config.seccomp,
+        )?;
+        drive_workers.push(DriveWorker {
+            stop,
+            notification,
+            thread: worker,
+        });
+        drives.push(device);
     }
-    let bus = Arc::new(Mutex::new(Bus {
+    let bus = Arc::new(Bus {
         memory: Arc::clone(&memory),
-        serial,
+        serial: Mutex::new(serial),
         drives,
-    }));
+    });
 
     let mut vcpus = Vec::with_capacity(usize::from(config.vcpus));
     for cpu_id in 0..config.vcpus {
@@ -194,15 +245,79 @@ pub(super) fn boot(config: UhvmConfig) -> Result<VmmExit> {
         );
     }
     drop(sender);
-    seccomp::apply_vmm_filter(config.seccomp)?;
-    let exit = receiver
-        .recv()
-        .map_err(|error| UhvmError::new(format!("wait for vCPU exit: {error}")))?;
+    if let Err(error) = seccomp::apply_vmm_filter(config.seccomp) {
+        stop_drive_workers(drive_workers)?;
+        return Err(error);
+    }
+    let exit = receiver.recv();
+    stop_drive_workers(drive_workers)?;
+    let exit = exit.map_err(|error| UhvmError::new(format!("wait for vCPU exit: {error}")))?;
+    bus.serial
+        .lock()
+        .map_err(|_| UhvmError::new("serial device lock is poisoned"))?
+        .close_output();
+    serial_output_thread
+        .join()
+        .map_err(|_| UhvmError::new("serial output thread panicked"))??;
     drop(threads);
     drop(input_thread);
     drop(bus);
     drop(vm);
     Ok(exit)
+}
+
+struct DriveWorker {
+    stop: Arc<AtomicBool>,
+    notification: EventFd,
+    thread: JoinHandle<Result<()>>,
+}
+
+fn spawn_drive_worker(
+    index: usize,
+    notification: EventFd,
+    drive: Arc<Mutex<VirtioBlock>>,
+    memory: Arc<GuestMemory>,
+    stop: Arc<AtomicBool>,
+    seccomp_level: crate::SeccompLevel,
+) -> Result<JoinHandle<Result<()>>> {
+    thread::Builder::new()
+        .name(format!("uhvm-blk{index}"))
+        .spawn(move || {
+            seccomp::apply_device_filter(seccomp_level)?;
+            loop {
+                match notification.read() {
+                    Ok(_) if stop.load(Ordering::Acquire) => break,
+                    Ok(_) => {
+                        drive
+                            .lock()
+                            .map_err(|_| UhvmError::new("virtio block device lock is poisoned"))?
+                            .process_queue(&memory);
+                    }
+                    Err(error) if error.kind() == io::ErrorKind::Interrupted => continue,
+                    Err(error) => {
+                        return Err(UhvmError::new(format!(
+                            "read virtio notification eventfd: {error}"
+                        )));
+                    }
+                }
+            }
+            Ok(())
+        })
+        .map_err(|error| UhvmError::new(format!("spawn virtio worker {index}: {error}")))
+}
+
+fn stop_drive_workers(workers: Vec<DriveWorker>) -> Result<()> {
+    for worker in &workers {
+        worker.stop.store(true, Ordering::Release);
+        let _ = worker.notification.write(1);
+    }
+    for worker in workers {
+        worker
+            .thread
+            .join()
+            .map_err(|_| UhvmError::new("virtio worker thread panicked"))??;
+    }
+    Ok(())
 }
 
 fn serial_output(sink: &SerialSink) -> Result<Box<dyn io::Write + Send>> {

@@ -1948,6 +1948,7 @@ dependencies = [
  "kvm-ioctls",
  "libc",
  "seccompiler",
+ "tempfile",
  "vmm-sys-util",
 ]
 

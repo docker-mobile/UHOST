@@ -3,7 +3,7 @@
 use std::{env, ffi::OsString, path::PathBuf, process::ExitCode, time::Instant};
 
 use serde_json::json;
-use uhost_uhvm::{DriveConfig, SeccompLevel, SerialSink, UhvmConfig, Vmm, VmmExit};
+use uhost_uhvm::{DriveConfig, SeccompLevel, SerialSink, UhvmConfig, Vmm, VmmExit, process};
 
 const DEFAULT_CMDLINE: &str = "console=ttyS0 reboot=k panic=1 pci=off nomodule 8250.nr_uarts=1 i8042.noaux i8042.nomux i8042.dumbkbd root=/dev/vda rw";
 
@@ -47,6 +47,8 @@ fn run() -> Result<ExitCode, String> {
         Some(extra) if !extra.trim().is_empty() => format!("{base_cmdline} {extra}"),
         _ => base_cmdline,
     };
+    process::close_inherited_fds().map_err(|error| error.to_string())?;
+    process::harden_process().map_err(|error| error.to_string())?;
     eprintln!(
         "{}",
         json!({
