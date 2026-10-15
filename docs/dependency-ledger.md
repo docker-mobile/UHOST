@@ -50,6 +50,19 @@ Replacement boundary:
 These form the network/runtime substrate. Replacing them would be a
 cross-cutting architectural decision, not an opportunistic library swap.
 
+### Virtualization
+
+- `kvm-ioctls`, `kvm-bindings`, and `vmm-sys-util`
+  Linux KVM VM/vCPU interfaces, KVM ABI structures, and eventfds for uHVM.
+- `libc`
+  Linux memory mapping, resource limits, and platform syscalls for uHVM.
+- `seccompiler`
+  Per-thread seccomp-BPF filters for the uHVM VMM and vCPUs.
+
+Replacement boundary:
+These Linux/x86_64-only dependencies are isolated behind the uHVM platform
+stub and do not add a second virtualization or guest-device framework.
+
 ### Crypto, Identity, And Secret Handling
 
 - `argon2`
